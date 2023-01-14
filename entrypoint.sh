@@ -11,10 +11,10 @@ export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
 # TODO: Here we should access the token for a company, and download their documentation checks
 # We could also download their configuration of working directory and others.
 
-ls -lR ./files
+ls -lR /files
 # TODO: Here we should run different package for all the different kind of checks
 
-vale src/content/ --output=rdjsonl.tmpl . \
+vale src/content/ --output=files/rdjsonl.tmpl . \
   | reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
