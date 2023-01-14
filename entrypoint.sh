@@ -10,7 +10,7 @@ export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
 
 vale src/content/ --output=rdjsonl.tmpl . \
   | reviewdog -efm="%f:%l:%c: %m" \
-      -name="linter-name (vale)" \
+      -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
