@@ -44,6 +44,8 @@ COPY --from=builder /bin/reviewdog /usr/local/bin/reviewdog
 ## Copy the current directory contents into the container at /app
 #COPY . /app
 
+COPY files /files
+
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
