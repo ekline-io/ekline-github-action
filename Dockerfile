@@ -5,10 +5,8 @@ FROM golang:alpine AS builder
 
 ENV REVIEWDOG_VERSION=v0.14.1
 
-SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
-
 # Install build tools
-RUN apk update && apk add --no-cache git wget zip tar
+RUN apk update && apk add --no-cache  wget zip tar
 
 WORKDIR /
 
@@ -30,6 +28,9 @@ RUN wget https://github.com/errata-ai/vale/releases/download/v2.21.3/vale_2.21.3
 ############################
 FROM alpine:3.17
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
+RUN apk update && apk add --no-cache git
 
 # Copy our static executable.
 COPY --from=builder /vale /usr/local/bin/vale
