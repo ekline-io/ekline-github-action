@@ -38,11 +38,11 @@ COPY --from=builder /bin/reviewdog /usr/local/bin/reviewdog
 #COPY --from=builder /Microsoft /styles/Microsoft
 #COPY --from=builder /Openly /styles/Openly
 
-# Set the working directory to /app
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-COPY . /app
+## Set the working directory to /app
+#WORKDIR /app
+#
+## Copy the current directory contents into the container at /app
+#COPY . /app
 
 COPY entrypoint.sh /entrypoint.sh
 
