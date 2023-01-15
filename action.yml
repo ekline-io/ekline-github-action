@@ -29,8 +29,8 @@ inputs:
     description: 'Additional reviewdog flags'
     default: ''
   ### Flags for EkLineReviewer ###
-  locale:
-    description: '-locale flag of misspell. (US/UK)'
+  elToken:
+    description: 'Token for EkLine application'
     default: ''
 runs:
   using: 'docker'

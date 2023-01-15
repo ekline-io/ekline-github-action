@@ -1,4 +1,4 @@
-# action-template
+# EkLine Documentation Reviewer action
 
 <!-- TODO: replace reviewdog/action-template with your repo name -->
 [![Test](https://github.com/reviewdog/action-template/workflows/Test/badge.svg)](https://github.com/reviewdog/action-template/actions?query=workflow%3ATest)

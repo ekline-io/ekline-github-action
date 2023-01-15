@@ -14,7 +14,7 @@ export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
 ls -lR /files
 # TODO: Here we should run different package for all the different kind of checks
 
-vale src/content/ --output=files/rdjsonl.tmpl . \
+vale src/content/ --output=/files/vale/rdjsonl.tmpl . \
   | reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
