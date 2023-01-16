@@ -30,9 +30,9 @@ vale_output="ek_vale_output.txt"
 
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
+pwd
 run_language_checks
 
-pwd
 
 < $vale_output reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
