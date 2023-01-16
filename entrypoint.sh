@@ -36,7 +36,7 @@ ls -lR /files
 
 ## Executing vale
 vale sync
-vale "$content_dir" --output="$vale_template" >> "$vale_output"
+vale "$content_dir" --output="$vale_template" > "$vale_output"
 
 < ekline_vale_output.txt reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
