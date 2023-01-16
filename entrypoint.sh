@@ -36,7 +36,7 @@ ls -lR /files
 
 run_language_checks() {
   vale sync
-  vale "$content_dir" --output="$vale_template" > "$vale_output"
+  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" > "$vale_output"
 }
 
 run_language_checks
