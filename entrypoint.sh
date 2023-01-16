@@ -9,9 +9,9 @@ get_content_dir() {
   fi
 }
 
-run_language_checks() {
-
-}
+#run_language_checks() {
+#
+#}
 
 
 if [ -n "${GITHUB_WORKSPACE}" ] ; then
