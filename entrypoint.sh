@@ -10,8 +10,8 @@ get_content_dir() {
 }
 
 run_language_checks() {
-  vale sync
-  vale "$content_dir" --output="$vale_template" >> "$vale_output"
+  vale sync --config="${content_dir}/.vale.ini"
+  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" >> "${work_dir}${vale_output}"
 }
 
 
@@ -31,7 +31,7 @@ vale_output="ek_vale_output.txt"
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
 pwd
-ls -lR ./
+
 
 run_language_checks
 
