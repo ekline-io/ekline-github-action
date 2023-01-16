@@ -7,6 +7,26 @@ if [ -n "${GITHUB_WORKSPACE}" ] ; then
 fi
 
 export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
+echo "${INPUT_EK_TOKEN}"
+echo "${INPUT_CONTENT_DIR}"
+echo "${INPUT_WORKDIR}"
+
+
+get_content_dir() {
+  if [ -z "$1" ]; then
+    echo "$2"
+  else
+    echo "$1"
+  fi
+}
+
+vale_template="/files/vale/rdjsonl.tmpl"
+vale_output="ek_vale_output.txt"
+work_dir="${INPUT_WORKDIR}"
+ek_token="${INPUT_EK_TOKEN}"
+
+content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
+
 
 # TODO: Here we should access the token for a company, and download their documentation checks
 # We could also download their configuration of working directory and others.
@@ -16,8 +36,7 @@ ls -lR /files
 
 ## Executing vale
 vale sync
-vale src/content/ --output=/files/vale/rdjsonl.tmpl >> ekline_vale_output.txt
-
+vale "$content_dir" --output="$vale_template" >> "$vale_output"
 
 < ekline_vale_output.txt reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
