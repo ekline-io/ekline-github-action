@@ -28,11 +28,14 @@ ek_token="${INPUT_EK_TOKEN}"
 
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
-  vale sync --config="${content_dir}/.vale.ini"
-  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" >> "$vale_output"
+run_language_checks() {
+  vale sync
+  vale "$content_dir"  --output="$vale_template" >> "$vale_output"
+}
 
+run_language_checks
 
-cat ek_vale_output.txt |  reviewdog -efm="%f:%l:%c: %m" \
+< $vale_output reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
