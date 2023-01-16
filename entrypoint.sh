@@ -1,17 +1,5 @@
 #!/bin/sh
-set -e
-
-
-if [ -n "${GITHUB_WORKSPACE}" ] ; then
-  cd "${GITHUB_WORKSPACE}/${INPUT_WORKDIR}" || exit
-  git config --global --add safe.directory "${GITHUB_WORKSPACE}" || exit 1
-fi
-
-export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
-echo "${INPUT_EK_TOKEN}"
-echo "${INPUT_CONTENT_DIR}"
-echo "${INPUT_WORKDIR}"
-
+set -e -o xtrace
 
 get_content_dir() {
   if [ -z "$1" ]; then
@@ -21,19 +9,30 @@ get_content_dir() {
   fi
 }
 
+run_language_checks() {
+  vale sync --config="${content_dir}.vale.ini"
+  vale "$content_dir" --config="${content_dir}.vale.ini" --output="$vale_template" >> "$vale_output"
+}
+
+
+if [ -n "${GITHUB_WORKSPACE}" ] ; then
+  cd "${GITHUB_WORKSPACE}/${INPUT_WORKDIR}" || exit
+  git config --global --add safe.directory "${GITHUB_WORKSPACE}" || exit 1
+fi
+
+export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
+echo "ek_token=${INPUT_EK_TOKEN}"
+echo "content_dir=${INPUT_CONTENT_DIR}"
+echo "work_dir=${INPUT_WORKDIR}"
+
 vale_template="/files/vale/rdjsonl.tmpl"
 vale_output="ek_vale_output.txt"
-work_dir="${INPUT_WORKDIR}"
-ek_token="${INPUT_EK_TOKEN}"
 
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
-run_language_checks() {
-  vale sync
-  vale "$content_dir"  --output="$vale_template" >> "$vale_output"
-}
-
 run_language_checks
+
+pwd
 
 < $vale_output reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
