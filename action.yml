@@ -35,6 +35,7 @@ inputs:
   content_dir:
     description: 'Content directory relative to the root directory.'
     default: ''
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
