@@ -40,7 +40,7 @@ run_language_checks() {
 
 run_language_checks
 
-< "${vale_output}" reviewdog -efm="%f:%l:%c: %m" \
+< ek_vale_output.txt reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
