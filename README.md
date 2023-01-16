@@ -53,7 +53,7 @@ inputs:
     description: 'Additional reviewdog flags'
     default: ''
   ### Flags for EkLineReviewer ###
-  ekToken:
+  ek_token:
     description: 'Token for EkLine'
     default: ''
 ```

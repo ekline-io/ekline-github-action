@@ -29,8 +29,11 @@ inputs:
     description: 'Additional reviewdog flags'
     default: ''
   ### Flags for EkLineReviewer ###
-  elToken:
+  ek_token:
     description: 'Token for EkLine application'
+    default: ''
+  content_dir:
+    description: 'Content directory relative to the root directory.'
     default: ''
 runs:
   using: 'docker'
