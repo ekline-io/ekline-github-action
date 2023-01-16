@@ -27,18 +27,21 @@ ek_token="${INPUT_EK_TOKEN}"
 
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
+ls -lR /files
 
 # TODO: Here we should access the token for a company, and download their documentation checks
 # We could also download their configuration of working directory and others.
 
-ls -lR /files
 # TODO: Here we should run different package for all the different kind of checks
 
-## Executing vale
-vale sync
-vale "$content_dir" --output="$vale_template" > "$vale_output"
+run_language_checks() {
+  vale sync
+  vale "$content_dir" --output="$vale_template" > "$vale_output"
+}
 
-< ekline_vale_output.txt reviewdog -efm="%f:%l:%c: %m" \
+run_language_checks
+
+< $vale_output reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
