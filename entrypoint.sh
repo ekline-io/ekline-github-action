@@ -10,8 +10,8 @@ get_content_dir() {
 }
 
 run_language_checks() {
-  vale sync --config="${content_dir}/.vale.ini"
-  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" >> ek_vale_output.txt
+  vale sync --config="${content_dir}.vale.ini"
+  vale "$content_dir" --config="${content_dir}.vale.ini" --output="$vale_template" >> ek_vale_output.txt
 }
 
 
@@ -35,9 +35,9 @@ pwd
 
 run_language_checks
 
-cat $vale_output
+cat ek_vale_output.txt
 
-cat $vale_output | reviewdog -efm="%f:%l:%c: %m" \
+cat ek_vale_output.txt | reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
