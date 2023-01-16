@@ -36,7 +36,7 @@ ls -lR /files
 # TODO: Here we should run different package for all the different kind of checks
 
 run_language_checks() {
-  vale sync
+  vale sync --config="${content_dir}/.vale.ini"
   vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" > "$vale_output"
 }
 
