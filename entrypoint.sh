@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e -o xtrace
+set -e
 
 
 if [ -n "${GITHUB_WORKSPACE}" ] ; then
