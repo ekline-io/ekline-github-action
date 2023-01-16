@@ -33,6 +33,8 @@ content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 pwd
 run_language_checks
 
+cat $vale_output
+
 cat $vale_output | reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
