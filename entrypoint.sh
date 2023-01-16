@@ -31,6 +31,8 @@ vale_output="ek_vale_output.txt"
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
 pwd
+ls -lR ./
+
 run_language_checks
 
 cat $vale_output
