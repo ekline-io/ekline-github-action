@@ -35,7 +35,7 @@ content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 
 run_language_checks() {
   vale sync --config="${content_dir}/.vale.ini"
-  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" > "$vale_output"
+  vale "$content_dir" --config="${content_dir}/.vale.ini" --output="$vale_template" >> "$vale_output"
 }
 
 run_language_checks
