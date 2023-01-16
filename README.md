@@ -53,8 +53,8 @@ inputs:
     description: 'Additional reviewdog flags'
     default: ''
   ### Flags for EkLineReviewer ###
-  locale:
-    description: '-locale flag of misspell. (US/UK)'
+  ekToken:
+    description: 'Token for EkLine'
     default: ''
 ```
 
