@@ -7,22 +7,42 @@ if [ -n "${GITHUB_WORKSPACE}" ] ; then
 fi
 
 export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
+echo "input_ek_token=${INPUT_EK_TOKEN}"
+echo "input_work_dir=${INPUT_WORKDIR}"
+echo "input_content_dir=${INPUT_CONTENT_DIR}"
 
-# TODO: Here we should access the token for a company, and download their documentation checks
-# We could also download their configuration of working directory and others.
+get_content_dir() {
+  if [ -z "$1" ]; then
+    echo "$2"
+  else
+    echo "$1"
+  fi
+}
 
-ls -lR /files
-# TODO: Here we should run different package for all the different kind of checks
+content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
+echo "content_dir=${content_dir}"
 
-## Executing vale
-vale sync
-vale src/content/ --output=/files/vale/rdjsonl.tmpl >> ekline_vale_output.txt
+setup_vale_files(){
+  ek_check_zip="ek_check.zip"
+  unzip $ek_check_zip
+}
 
+vale_template="/files/vale/rdjsonl.tmpl"
+vale_output="${INPUT_WORKDIR}/ek_vale_output.txt"
 
-< ekline_vale_output.txt reviewdog -efm="%f:%l:%c: %m" \
+run_language_checks() {
+  touch "$vale_output"
+  setup_vale_files
+  vale sync
+  vale "$1" --output="$vale_template" --no-exit >> "$vale_output"
+}
+
+run_language_checks "$content_dir"
+
+< "$vale_output" reviewdog -f="rdjsonl" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
-      -filter-mode="${INPUT_FILTER_MODE}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
+      -filter-mode="${INPUT_FILTER_MODE}" \
       -level="${INPUT_LEVEL}" \
       ${INPUT_REVIEWDOG_FLAGS}
