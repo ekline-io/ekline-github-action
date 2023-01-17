@@ -21,6 +21,7 @@ get_content_dir() {
   fi
 }
 
+
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 echo "content_dir=${content_dir}"
 
@@ -29,13 +30,13 @@ setup_vale_files(){
   unzip $ek_check_zip
 }
 
-run_language_checks() {
-  vale_template="/files/vale/rdjsonl.tmpl"
-  vale_output="ek_vale_output.txt"
+vale_template="/files/vale/rdjsonl.tmpl"
+vale_output="${INPUT_WORKDIR}/ek_vale_output.txt"
 
+run_language_checks() {
   setup_vale_files
   vale sync
-  vale "$content_dir" --output="$vale_template" >> $vale_output
+  vale "$content_dir" --output="$vale_template" >> "$vale_output"
 }
 
 pwd
