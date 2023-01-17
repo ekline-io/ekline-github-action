@@ -39,7 +39,7 @@ run_language_checks() {
 
 run_language_checks "$content_dir"
 
-< $vale_output reviewdog -f="rdjsonl" \
+< "$vale_output" reviewdog -f="rdjsonl" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
