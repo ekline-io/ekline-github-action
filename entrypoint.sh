@@ -34,6 +34,7 @@ vale_template="/files/vale/rdjsonl.tmpl"
 vale_output="${INPUT_WORKDIR}/ek_vale_output.txt"
 
 run_language_checks() {
+  touch "$vale_output"
   setup_vale_files
   vale sync
   vale "$content_dir" --output="$vale_template" >> "$vale_output"
@@ -42,8 +43,6 @@ run_language_checks() {
 pwd
 
 run_language_checks "$content_dir"
-
-which $vale_output
 
 more $vale_output
 

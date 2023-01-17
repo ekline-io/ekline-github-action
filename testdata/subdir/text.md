@@ -1,2 +1,2 @@
-Deterministic result is important!
+Determninistic result is important!
 
