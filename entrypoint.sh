@@ -37,7 +37,7 @@ run_language_checks() {
   touch "$vale_output"
   setup_vale_files
   vale sync
-  vale "$1" --output="$vale_template" >> "$vale_output"
+  vale "$1" --output="$vale_template" --no-exit >> "$vale_output"
 }
 
 pwd
@@ -52,4 +52,4 @@ more $vale_output
       -filter-mode="${INPUT_FILTER_MODE}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
       -level="${INPUT_LEVEL}" \
-      "${INPUT_REVIEWDOG_FLAGS}"
+      ${INPUT_REVIEWDOG_FLAGS}
