@@ -1,7 +1,5 @@
 #!/bin/sh
-set -e -o xtrace
-
-ek_check_zip="ek_check.zip"
+set -e
 
 if [ -n "${GITHUB_WORKSPACE}" ] ; then
   cd "${GITHUB_WORKSPACE}/${INPUT_WORKDIR}" || exit
@@ -21,12 +19,11 @@ get_content_dir() {
   fi
 }
 
-
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 echo "content_dir=${content_dir}"
 
-
 setup_vale_files(){
+  ek_check_zip="ek_check.zip"
   unzip $ek_check_zip
 }
 
@@ -40,11 +37,7 @@ run_language_checks() {
   vale "$1" --output="$vale_template" --no-exit >> "$vale_output"
 }
 
-pwd
-
 run_language_checks "$content_dir"
-
-more $vale_output
 
 < $vale_output reviewdog -f="rdjsonl" \
       -name="EkLineReviewer" \
