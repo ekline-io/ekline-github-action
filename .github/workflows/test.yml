@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   test-check:
-    name: runner / EkLineReviewer (github-check)
+    name: runner / EkLine Reviewer (github-check)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -19,7 +19,7 @@ jobs:
 
   test-pr-check:
     if: github.event_name == 'pull_request'
-    name: runner / EkLineReviewer (github-pr-check)
+    name: runner / EkLine Reviewer (github-pr-check)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -32,7 +32,7 @@ jobs:
 
   test-pr-review:
     if: github.event_name == 'pull_request'
-    name: runner / EkLineReviewer (github-pr-review)
+    name: runner / EkLine Reviewer (github-pr-review)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
