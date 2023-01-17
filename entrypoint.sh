@@ -37,7 +37,7 @@ run_language_checks() {
   touch "$vale_output"
   setup_vale_files
   vale sync
-  vale "$content_dir" --output="$vale_template" >> "$vale_output"
+  vale "$1" --output="$vale_template" >> "$vale_output"
 }
 
 pwd
@@ -46,10 +46,10 @@ run_language_checks "$content_dir"
 
 more $vale_output
 
-cat $vale_output | reviewdog -efm="%f:%l:%c: %m" \
+< $vale_output reviewdog -efm="%f:%l:%c: %m" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
       -filter-mode="${INPUT_FILTER_MODE}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
       -level="${INPUT_LEVEL}" \
-      ${INPUT_REVIEWDOG_FLAGS}
+      "${INPUT_REVIEWDOG_FLAGS}"
