@@ -11,7 +11,7 @@ get_content_dir() {
 
 run_language_checks() {
   vale sync
-  vale ./ --output="$vale_template" >> "${vale_output}"
+  vale ./ --output="$vale_template"
 }
 
 
