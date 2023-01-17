@@ -46,10 +46,10 @@ run_language_checks "$content_dir"
 
 more $vale_output
 
-< $vale_output reviewdog -efm="%f:%l:%c: %m" \
+< $vale_output reviewdog -f="rdjsonl" \
       -name="EkLineReviewer" \
       -reporter="${INPUT_REPORTER:-github-pr-check}" \
-      -filter-mode="${INPUT_FILTER_MODE}" \
       -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
+      -filter-mode="${INPUT_FILTER_MODE}" \
       -level="${INPUT_LEVEL}" \
       ${INPUT_REVIEWDOG_FLAGS}
