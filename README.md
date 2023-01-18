@@ -52,7 +52,7 @@ inputs:
   reviewdog_flags:
     description: 'Additional reviewdog flags'
     default: ''
-  ### Flags for EkLineReviewer ###
+  ### Flags for EkLine Reviewer ###
   ek_token:
     description: 'Token for EkLine'
     default: ''
@@ -66,11 +66,11 @@ name: reviewdog
 on: [pull_request]
 jobs:
   linter_name:
-    name: runner / EkLineReviewer
+    name: runner / EkLine Reviewer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: reviewdog/action-EkLineReviewer@v1
+      - uses: reviewdog/action-EkLine-Reviewer@v1
         with:
           github_token: ${{ secrets.github_token }}
           # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
