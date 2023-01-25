@@ -26,7 +26,6 @@ RUN apk update && apk add --no-cache git
 COPY --from=builder /vale /usr/local/bin/vale
 COPY --from=builder /bin/reviewdog /usr/local/bin/reviewdog
 
-
 COPY files /files
 COPY entrypoint.sh /entrypoint.sh
 

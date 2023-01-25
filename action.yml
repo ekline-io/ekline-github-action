@@ -31,11 +31,10 @@ inputs:
   ### Flags for EkLine Reviewer ###
   ek_token:
     description: 'Token for EkLine application'
-    default: ''
+    required: true
   content_dir:
     description: 'Content directory relative to the root directory.'
-    default: ''
-    required: true
+    default: '.'
 runs:
   using: 'docker'
   image: 'Dockerfile'
