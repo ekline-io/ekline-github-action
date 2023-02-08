@@ -7,9 +7,6 @@ if [ -n "${GITHUB_WORKSPACE}" ] ; then
 fi
 
 export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
-echo "input_ek_token=${INPUT_EK_TOKEN}"
-echo "input_work_dir=${INPUT_WORKDIR}"
-echo "input_content_dir=${INPUT_CONTENT_DIR}"
 
 get_content_dir() {
   if [ -z "$1" ]; then
