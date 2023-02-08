@@ -20,7 +20,7 @@ content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
 echo "content_dir=${content_dir}"
 
 setup_vale_files(){
-  wget "https://storage.googleapis.com/ekline-config/${INPUT_EK_TOKEN}/config.zip"
+  wget -q "https://storage.googleapis.com/ekline-config/${INPUT_EK_TOKEN}/config.zip"
   unzip -q config.zip
 }
 
