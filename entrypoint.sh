@@ -7,9 +7,6 @@ if [ -n "${GITHUB_WORKSPACE}" ] ; then
 fi
 
 export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
-echo "input_ek_token=${INPUT_EK_TOKEN}"
-echo "input_work_dir=${INPUT_WORKDIR}"
-echo "input_content_dir=${INPUT_CONTENT_DIR}"
 
 get_content_dir() {
   if [ -z "$1" ]; then
@@ -20,11 +17,10 @@ get_content_dir() {
 }
 
 content_dir=$(get_content_dir "${INPUT_CONTENT_DIR}" "${INPUT_WORKDIR}")
-echo "content_dir=${content_dir}"
 
 setup_vale_files(){
-  ek_check_zip="ek_check.zip"
-  unzip $ek_check_zip
+  wget -q "https://storage.googleapis.com/ekline-config/${INPUT_EK_TOKEN}/config.zip"
+  unzip -q config.zip
 }
 
 vale_template="/files/vale/rdjsonl.tmpl"

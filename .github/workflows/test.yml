@@ -16,6 +16,7 @@ jobs:
           reporter: github-check
           level: info
           content_dir: ./testdata/subdir
+          ek_token: ${{ secrets.ek_token }}
 
   test-pr-check:
     if: github.event_name == 'pull_request'
@@ -29,6 +30,7 @@ jobs:
           reporter: github-pr-check
           level: warning
           content_dir: ./testdata/subdir
+          ek_token: ${{ secrets.ek_token }}
 
   test-pr-review:
     if: github.event_name == 'pull_request'
@@ -43,3 +45,4 @@ jobs:
           level: error
           content_dir: ./testdata/subdir
           reviewdog_flags: -filter-mode=file -fail-on-error
+          ek_token: ${{ secrets.ek_token }}
