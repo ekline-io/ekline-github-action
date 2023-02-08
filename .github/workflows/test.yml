@@ -29,6 +29,7 @@ jobs:
           reporter: github-pr-check
           level: warning
           content_dir: ./testdata/subdir
+          ek_token: ${{ secrets.ek_token }}
 
   test-pr-review:
     if: github.event_name == 'pull_request'
