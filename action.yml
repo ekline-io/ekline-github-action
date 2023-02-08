@@ -1,5 +1,5 @@
-name: 'Run EkLine Reviewer with reviewdog'
-description: '📝 Run EkLineReviewer with reviewdog on pull requests to improve code review experience.'
+name: 'EkLine'
+description: '📝 Optimize and improve your documentation website.'
 author: 'EkLine'
 inputs:
   github_token:
