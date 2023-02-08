@@ -23,9 +23,10 @@
 {{- $col := printf "%d" (index .Span 0) -}}
 {{- $check := printf "%s" .Check -}}
 {{- $message := printf "%s" .Message -}}
+{{- $link := printf "%s" .Link -}}
 
 {{- /* Output */ -}}
 
-{"message": "[{{ $check }}] {{ $message | jsonEscape }}", "location": {"path": "{{ $path }}", "range": {"start": {"line": {{ $line }}, "column": {{ $col }}}}}, "severity": "{{ $error }}"}
+{"message": "{{ $message | jsonEscape }} [🔗]({{ $link }})", "location": {"path": "{{ $path }}", "range": {"start": {"line": {{ $line }}, "column": {{ $col }}}}}, "severity": "{{ $error }}"}
 {{end -}}
 {{end -}}
