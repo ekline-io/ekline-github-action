@@ -27,6 +27,6 @@
 
 {{- /* Output */ -}}
 
-{"message": "{{ $message | jsonEscape }} [🔗]({{ $link }})", "location": {"path": "{{ $path }}", "range": {"start": {"line": {{ $line }}, "column": {{ $col }}}}}, "severity": "{{ $error }}"}
+{"message": "{{ $message | jsonEscape }} [learn more]({{$link}})", "location": {"path": "{{ $path }}", "range": {"start": {"line": {{ $line }}, "column": {{ $col }}}}}, "severity": "{{ $error }}"}
 {{end -}}
 {{end -}}
