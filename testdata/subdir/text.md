@@ -1,2 +1,0 @@
-Deterministic result is important!
-
