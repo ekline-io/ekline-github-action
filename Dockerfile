@@ -1,6 +1,5 @@
-FROM puneetar/ekline-github-action-docker:v3.0
+FROM ghcr.io/ekline-io/ekline-cli:latest
 
-COPY files /files
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

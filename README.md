@@ -13,14 +13,8 @@
 inputs:
   github_token:
     description: 'GITHUB_TOKEN'
-    default: '${{ github.token }}'
-  workdir:
-    description: 'Working directory relative to the root directory.'
-    default: '.'
+    default: '${{ secrets.github_token }}'
   ### Flags for reviewdog ###
-  level:
-    description: 'Report level for reviewdog [info,warning,error]'
-    default: 'error'
   reporter:
     description: 'Reporter of reviewdog command [github-pr-check,github-check,github-pr-review].'
     default: 'github-pr-check'
@@ -29,14 +23,6 @@ inputs:
       Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
       Default is added.
     default: 'added'
-  fail_on_error:
-    description: |
-      Exit code for reviewdog when errors are found [true,false]
-      Default is `false`.
-    default: 'false'
-  reviewdog_flags:
-    description: 'Additional reviewdog flags'
-    default: ''
   ### Flags for EkLine Reviewer ###
   ek_token:
     description: 'Token for EkLine application'
@@ -67,7 +53,7 @@ jobs:
           github_token: ${{ secrets.github_token }}
           # Change reporter if you need [github-pr-check,github-check,github-pr-review].
           reporter: github-pr-review
-          level: error
+          filter_mode: file
+          ek_token: ${{ secrets.ek_token }}
           content_dir: ./src/content
-          reviewdog_flags: -filter-mode=file
 ```
