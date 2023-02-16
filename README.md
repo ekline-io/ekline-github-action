@@ -1,4 +1,4 @@
-# EkLine Documentation Reviewer action
+# EkLine GitHub action
 
 [![Test](https://github.com/ekline-io/ekline-github-action/workflows/Test/badge.svg)](https://github.com/ekline-io/ekline-github-action/actions?query=workflow%3ATest)
 [![reviewdog](https://github.com/ekline-io/ekline-github-action/workflows/reviewdog/badge.svg)](https://github.com/ekline-io/ekline-github-action/actions?query=workflow%3Areviewdog)
@@ -11,25 +11,23 @@
 
 ```yaml
 inputs:
-  github_token:
-    description: 'GITHUB_TOKEN'
-    default: '${{ secrets.github_token }}'
-  ### Flags for reviewdog ###
-  reporter:
-    description: 'Reporter of reviewdog command [github-pr-check,github-check,github-pr-review].'
-    default: 'github-pr-check'
+  content_dir:
+    description: 'Content directory relative to the root directory.'
+    default: '.'
+  ek_token:
+    description: 'Token for EkLine application'
+    required: true
   filter_mode:
     description: |
       Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
       Default is added.
     default: 'added'
-  ### Flags for EkLine Reviewer ###
-  ek_token:
-    description: 'Token for EkLine application'
-    required: true
-  content_dir:
-    description: 'Content directory relative to the root directory.'
-    default: '.'
+  github_token:
+    description: 'GITHUB_TOKEN'
+    default: '${{ secrets.github_token }}'
+  reporter:
+    description: 'Reporter of reviewdog command [github-pr-check,github-check,github-pr-review].'
+    default: 'github-pr-check'
 ```
 
 ## Usage
@@ -50,10 +48,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ekline-io/ekline-github-action@v2
         with:
-          github_token: ${{ secrets.github_token }}
-          # Change reporter if you need [github-pr-check,github-check,github-pr-review].
-          reporter: github-pr-review
-          filter_mode: file
-          ek_token: ${{ secrets.ek_token }}
           content_dir: ./src/content
+          ek_token: ${{ secrets.ek_token }}
+          filter_mode: file
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
 ```
