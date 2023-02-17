@@ -11,9 +11,9 @@
   * [Input](#input)
   * [Usage](#usage)
   * [Reporters](#reporters)
-    * [Reporter: GitHub Checks (-reporter=github-pr-check)](#reporter--github-checks---reportergithub-pr-check-)
-    * [Reporter: GitHub Checks (-reporter=github-check)](#reporter--github-checks---reportergithub-check-)
-    * [Reporter: GitHub PullRequest review comment (-reporter=github-pr-review)](#reporter--github-pullrequest-review-comment---reportergithub-pr-review-)
+    * [Reporter: GitHub Checks (reporter: github-pr-check)](#reporter--github-checks--reporter--github-pr-check-)
+    * [Reporter: GitHub Checks (reporter: github-check)](#reporter--github-checks--reporter--github-check-)
+    * [Reporter: GitHub PullRequest review comment (reporter: github-pr-review)](#reporter--github-pullrequest-review-comment--reporter--github-pr-review-)
   * [Filter mode](#filter-mode)
     * [`added` (default)](#added--default-)
     * [`diff_context`](#diffcontext)
@@ -75,16 +75,16 @@ jobs:
 EkLine reviewer can report results in review services as
 continuous integration.
 
-### Reporter: GitHub Checks (-reporter=github-pr-check)
+### Reporter: GitHub Checks (reporter: github-pr-check)
 
 github-pr-check reporter reports results to [GitHub Checks](https://help.github.com/articles/about-status-checks/).
 
-### Reporter: GitHub Checks (-reporter=github-check)
+### Reporter: GitHub Checks (reporter: github-check)
 
-It's basically same as `-reporter=github-pr-check` except it works not only for
+It's basically same as `reporter: github-pr-check` except it works not only for
 Pull Request but also for commit.
 
-### Reporter: GitHub PullRequest review comment (-reporter=github-pr-review)
+### Reporter: GitHub PullRequest review comment (reporter: github-pr-review)
 
 ![sample-github-pr-review.png](./image/sample-github-pr-review.png)
 
@@ -115,10 +115,10 @@ e.g. `github-pr-review` reporter uses [GitHub Review
 API](https://developer.github.com/v3/pulls/reviews/) but it doesn't support posting comment outside diff (`diff_context`),
 so EkLine reviewer will use [Check annotation](https://developer.github.com/v3/checks/runs/) as fallback to post those comments [1].
 
-| `-reporter` \ `-filter-mode` | `added` | `diff_context` | `file`                  | `nofilter` |
-| ---------------------------- | ------- | -------------- | ----------------------- | ---------- |
-| **`github-check`**           | OK      | OK             | OK                      | OK |
-| **`github-pr-check`**        | OK      | OK             | OK                      | OK |
-| **`github-pr-review`**       | OK      | OK             | Partially Supported [1] | Partially Supported [1] |
+| `reporter` \ `filter-mode` | `added` | `diff_context` | `file`                  | `nofilter` |
+| -------------------------- | ------- | -------------- | ----------------------- | ---------- |
+| **`github-check`**         | OK      | OK             | OK                      | OK |
+| **`github-pr-check`**      | OK      | OK             | OK                      | OK |
+| **`github-pr-review`**     | OK      | OK             | Partially Supported [1] | Partially Supported [1] |
 
 - [1] Report results which is outside diff context with Check annotation as fallback if it's running in GitHub actions instead of Review API (comments). All results will be reported to console as well.
