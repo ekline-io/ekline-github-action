@@ -53,6 +53,7 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
 jobs:
   test-pr-review:
@@ -63,7 +64,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ekline-io/ekline-github-action@v5
         with:
-          content_dir: ./src/content
+          content_dir: ./src/docs
           ek_token: ${{ secrets.ek_token }}
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
