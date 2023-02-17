@@ -6,6 +6,22 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ekline-io/ekline-github-action?logo=github&sort=semver)](https://github.com/ekline-io/ekline-github-action/releases)
 [![action-bumpr supported](https://img.shields.io/badge/bumpr-supported-ff69b4?logo=github&link=https://github.com/haya14busa/action-bumpr)](https://github.com/haya14busa/action-bumpr)
 
+<!-- TOC -->
+* [EkLine GitHub action](#ekline-github-action)
+  * [Input](#input)
+  * [Usage](#usage)
+  * [Reporters](#reporters)
+    * [Reporter: GitHub Checks (-reporter=github-pr-check)](#reporter--github-checks---reportergithub-pr-check-)
+    * [Reporter: GitHub Checks (-reporter=github-check)](#reporter--github-checks---reportergithub-check-)
+    * [Reporter: GitHub PullRequest review comment (-reporter=github-pr-review)](#reporter--github-pullrequest-review-comment---reportergithub-pr-review-)
+  * [Filter mode](#filter-mode)
+    * [`added` (default)](#added--default-)
+    * [`diff_context`](#diffcontext)
+    * [`file`](#file)
+    * [`nofilter`](#nofilter)
+    * [Filter Mode Support Table](#filter-mode-support-table)
+<!-- TOC -->
+
 ## Input
 
 ```yaml
