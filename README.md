@@ -65,7 +65,6 @@ jobs:
         with:
           content_dir: ./src/content
           ek_token: ${{ secrets.ek_token }}
-          filter_mode: file
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
 ```
