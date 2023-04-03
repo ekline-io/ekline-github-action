@@ -9,6 +9,10 @@ on:
     types:
       - labeled
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ekline-ci-cd
+
 jobs:
   release:
     if: github.event.action != 'labeled'
@@ -48,18 +52,19 @@ jobs:
 
       - if: "steps.tag.outputs.value != ''"
         name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - if: "steps.tag.outputs.value != ''"
         name: Build and push Docker image
-        env:
-          TAG_NAME: ${{ steps.tag.outputs.value }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: docker build -t ekline-io/ekline-gitlab-ci:${{ env.TAG_NAME }} . && docker push ekline-io/ekline-gitlab-ci:${{ env.TAG_NAME }}
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
 
   release-check:
     if: github.event.action == 'labeled'
