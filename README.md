@@ -6,6 +6,9 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ekline-io/ekline-github-action?logo=github&sort=semver)](https://github.com/ekline-io/ekline-github-action/releases)
 [![action-bumpr supported](https://img.shields.io/badge/bumpr-supported-ff69b4?logo=github&link=https://github.com/haya14busa/action-bumpr)](https://github.com/haya14busa/action-bumpr)
 
+Improve the quality and consistency of your documentation with EkLine, an automated review tool for your GitHub repositories. This action integrates seamlessly with your existing GitHub workflow, allowing you to maintain high-quality documentation easily.
+
+
 <!-- TOC -->
 * [EkLine GitHub action](#ekline-github-action)
   * [Input](#input)
@@ -20,6 +23,7 @@
     * [`file`](#file)
     * [`nofilter`](#nofilter)
     * [Filter Mode Support Table](#filter-mode-support-table)
+* [EkLine Documentation](https://ekline.notion.site/EkLine-Documentation-820e545d76214d9d9cb2cbf627c19613)
 <!-- TOC -->
 
 ## Input
