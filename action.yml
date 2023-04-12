@@ -11,7 +11,7 @@ inputs:
   ### Flags for reviewdog ###
   level:
     description: 'Report level for reviewdog [info,warning,error]'
-    default: 'error'
+    default: 'info'
   reporter:
     description: 'Reporter of reviewdog command [github-pr-check,github-pr-review].'
     default: 'github-pr-check'
@@ -35,6 +35,9 @@ inputs:
   content_dir:
     description: 'Content directory relative to the root directory.'
     default: '.'
+  ignore_rule:
+    description: 'Ignore the rules that are passed in as comma seperated values (eg: EK1,EK4)'
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
