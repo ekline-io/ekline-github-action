@@ -23,10 +23,13 @@ export REVIEWDOG_GITLAB_API_TOKEN="${rd_api_token}"
 export REVIEWDOG_GITHUB_API_TOKEN="${rd_api_token}"
 
 output="ekOutput.jsonl"
-ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" "${disable_suggestions}"
+ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
+
+LEVEL=${INPUT_LEVEL:-info}
 
 < "$output" reviewdog -f="rdjsonl" \
   -name="EkLine" \
   -reporter="${INPUT_REPORTER}" \
   -filter-mode="${INPUT_FILTER_MODE}" \
+  -level="${LEVEL}" \
   ${INPUT_REVIEWDOG_FLAGS}
