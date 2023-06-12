@@ -44,7 +44,7 @@ if [ -e "$previous_feedback_file" ]; then
   # Create a temporary directory for storing intermediate files
   temp_dir=$(mktemp -d)
 
-  # Build a hash table of entries from the second file
+  # Build a hash table of entries from the previous feedback
   while IFS= read -r other_entry; do
     # Extract line, location, and error type from the entry
     line=$(echo "$other_entry" | jq -r '.location.range.start.line')
@@ -63,7 +63,7 @@ if [ -e "$previous_feedback_file" ]; then
     echo "$other_entry" >> "$hash_file"
   done < "$previous_feedback_file"
 
-  # Iterate through the entries in the first file
+  # Iterate through the entries in the new feedback
   while IFS= read -r entry; do
     # Extract line, location, and error type from the entry
     line=$(echo "$entry" | jq -r '.location.range.start.line')
@@ -80,18 +80,18 @@ if [ -e "$previous_feedback_file" ]; then
       continue
     fi
 
-    # Append non-matching entries to the file that shows the unique
+    # Append non-matching entries to the file that stores unique entries
     echo "$entry" >> "$temp_file"
 
-    # Append non-matching entries to the file that will get stored as a running log
+    # Append non-matching entries to the file that will store a running feedback log
     echo "$entry" >> "$previous_feedback_file"
   done < "$current_output"
 
   if [ -f "$temp_file" ]; then
-    # Replace current Ekline output run with the unique entries file
+    # Replace current feedback with the unique feedback file
     mv "$temp_file" "$current_output"
   else
-    # This means that we have no unique entries in this run, so blank out the reviewdog output file
+    # This means that we have no unique entries in this run, so blank out the feedback file
     > "$current_output"
   fi
   # Clean up temporary directory
@@ -100,7 +100,7 @@ else
   echo "No previous feedback exists"
   # No historical data, so we make current output = historical output to be saved
     if [ -f "$current_output" ]; then
-      # THe file exists, so the copy is possible, else nothing to do
+      # The file exists, so the copy is possible, else nothing to do
       mkdir -p "$previous_feedback_directory"
       cp "$current_output" "$previous_feedback_file"
     fi
