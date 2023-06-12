@@ -15,85 +15,99 @@ else
   exit 1
 fi
 
+
 # Set workspace directory and safe.directory
 if [ -n "${input_workspace}" ] ; then
   cd "${input_workspace}/${INPUT_WORKDIR}" || exit
+
   git config --global --add safe.directory "${input_workspace}" || exit 1
 fi
 
+# Set Review Dog API tokens for Gitlab and GitHub
 export REVIEWDOG_GITLAB_API_TOKEN="${rd_api_token}"
 export REVIEWDOG_GITHUB_API_TOKEN="${rd_api_token}"
 export GITHUB_TOKEN="${rd_api_token}"
 
-output="ekOutput.jsonl"
-ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
-
-# Path to the fresh comment file
-ekoutput_file="./EkOutput.jsonl"
+# Run Ekline to generate EkOutput
+current_output="./EkOutput.jsonl"
+ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${current_output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
 
 # Path to the historic reviewdog file
-other_file="./fetched-artifact/EkOutput.jsonl"
+previous_feedback_file="./fetched-artifact/EkOutput.jsonl"
+previous_feedback_directory="./fetched-artifact/"
 
-# Temporary file for storing non-matching entries
-temp_file="./ekoutput_filtered.jsonl"
+if [ -e "$previous_feedback_file" ]; then
+  echo "Previous feedback exists"
+  # Temporary file for storing non-matching entries
+  temp_file="ekoutput_filtered.jsonl"
 
-# Create a temporary directory for storing intermediate files
-temp_dir=$(mktemp -d)
+  # Create a temporary directory for storing intermediate files
+  temp_dir=$(mktemp -d)
 
- # Build a hash table of entries from the second file
- while IFS= read -r other_entry; do
-   echo "Processing entry: $other_entry"
+  # Build a hash table of entries from the second file
+  while IFS= read -r other_entry; do
+    # Extract line, location, and error type from the entry
+    line=$(echo "$other_entry" | jq -r '.location.range.start.line')
+    location=$(echo "$other_entry" | jq -r '.location.path')
+    error_type=$(echo "$other_entry" | grep -oE '\[EK[0-9]{5}\]' | head -n1 | tr -d '[]')
 
-   # Extract line, location, and error type from the entry
-   line=$(echo "$other_entry" | jq -r '.location.range.start.line')
-   location=$(echo "$other_entry" | jq -r '.location.path')
-   error_type=$(echo "$other_entry" | grep -oE '\[EK[0-9]{5}\]' | head -n1 | tr -d '[]')
+    # Generate a hash key based on line, location, and error type
+    hash_key="${line}_${location}_${error_type}"
 
-   # Generate a hash key based on line, location, and error type
-   hash_key="${line}_${location}_${error_type}"
+    # Create a temporary file for the hash key if it doesn't exist
+    hash_file="$temp_dir/$hash_key"
+    mkdir -p "$(dirname "$hash_file")"
+    touch "$hash_file"
 
-   # Create a temporary file for the hash key if it doesn't exist
-   hash_file="$temp_dir/$hash_key"
-   mkdir -p "$(dirname "$hash_file")"
-   touch "$hash_file"
+    # Append the entry to the hash file
+    echo "$other_entry" >> "$hash_file"
+  done < "$previous_feedback_file"
 
-   # Append the entry to the hash file
-   echo "$other_entry" >> "$hash_file"
- done < "$other_file"
+  # Iterate through the entries in the first file
+  while IFS= read -r entry; do
+    # Extract line, location, and error type from the entry
+    line=$(echo "$entry" | jq -r '.location.range.start.line')
+    location=$(echo "$entry" | jq -r '.location.path')
+    error_type=$(echo "$entry" | grep -oE '\[EK[0-9]{5}\]' | head -n1 | tr -d '[]')
 
- # Iterate through the entries in the first file
- while IFS= read -r entry; do
-   # Extract line, location, and error type from the entry
-   line=$(echo "$entry" | jq -r '.location.range.start.line')
-   location=$(echo "$entry" | jq -r '.location.path')
-   error_type=$(echo "$entry" | grep -oE '\[EK[0-9]{5}\]' | head -n1 | tr -d '[]')
+    # Generate a hash key based on line, location, and error type
+    hash_key="${line}_${location}_${error_type}"
 
-   # Generate a hash key based on line, location, and error type
-   hash_key="${line}_${location}_${error_type}"
+    # Check if the hash file for the hash key exists
+    hash_file="$temp_dir/$hash_key"
+    if [ -f "$hash_file" ]; then
+      # Match found, skip this entry
+      continue
+    fi
 
-   # Check if the hash file for the hash key exists
-   hash_file="$temp_dir/$hash_key"
-   if [ -f "$hash_file" ]; then
-     # Match found, skip this entry
-     continue
-   fi
+    # Append non-matching entries to the file that shows the unique
+    echo "$entry" >> "$temp_file"
 
-   # Append non-matching entries to the temporary file
-   echo "$entry" >> "$temp_file"
- done < "$ekoutput_file"
+    # Append non-matching entries to the file that will get stored as a running log
+    echo "$entry" >> "$previous_feedback_file"
+  done < "$current_output"
 
- # Replace the original file with the filtered entries if it exists
- if [ -e "$temp_file" ]; then
-   mv "$temp_file" "$ekoutput_file"
- fi
+  if [ -f "$temp_file" ]; then
+    # Replace current Ekline output run with the unique entries file
+    mv "$temp_file" "$current_output"
+  else
+    # This means that we have no unique entries in this run, so blank out the reviewdog output file
+    > "$current_output"
+  fi
+  # Clean up temporary directory
+  rm -rf "$temp_dir"
+else
+  echo "No previous feedback exists"
+  # No historical data, so we make current output = historical output to be saved
+    if [ -f "$current_output" ]; then
+      # THe file exists, so the copy is possible, else nothing to do
+      mkdir -p "$previous_feedback_directory"
+      cp "$current_output" "$previous_feedback_file"
+    fi
+fi
 
- # Clean up temporary directory
- rm -rf "$temp_dir"
-
- LEVEL=${INPUT_LEVEL:-info}
-
-
-< "$output" reviewdog -f="rdjsonl" \
+LEVEL=${INPUT_LEVEL:-info}
+< "$current_output" reviewdog -f="rdjsonl" \
   -name="EkLine" \
   -reporter="${INPUT_REPORTER}" \
   -filter-mode="${INPUT_FILTER_MODE}" \
