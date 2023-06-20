@@ -44,7 +44,7 @@ if [ -e "$previous_feedback_file" ]; then
   # Create a temporary directory for storing intermediate files
   temp_dir=$(mktemp -d)
 
-  # Build a hash table of entries from the previous feedback
+  # Build a hash table of entries from the running feedback log
   while IFS= read -r other_entry; do
     # Extract line, location, and error type from the entry
     line=$(echo "$other_entry" | jq -r '.location.range.start.line')
