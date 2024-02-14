@@ -32,6 +32,14 @@ jobs:
         if: "!steps.bumpr.outputs.skip"
         with:
           tag: ${{ steps.bumpr.outputs.next_version }}
+      
+      - id: "tag_create"
+        if: "!steps.bumpr.outputs.skip"
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "latest"
+          force_push_tag: true
+          message: "Latest release"
 
       # Get tag name.
       - id: tag
