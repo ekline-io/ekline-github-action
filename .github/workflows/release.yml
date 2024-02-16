@@ -50,9 +50,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/ekline-io/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern=${{ steps.tag.outputs.value }}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern=v{{version}},value=${{ steps.tag.outputs.value }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ steps.tag.outputs.value }}
+            type=semver,pattern=v{{major}},value=${{ steps.tag.outputs.value }}
             type=raw,value=latest
       
       - if: "steps.tag.outputs.value != ''"
