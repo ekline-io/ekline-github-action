@@ -1,4 +1,4 @@
-FROM ghcr.io/ekline-io/ekline-cli:5.1.3
+FROM ghcr.io/ekline-io/ekline-cli:6.0.6
 
 COPY entrypoint.sh /entrypoint.sh
 
