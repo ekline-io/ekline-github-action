@@ -44,6 +44,18 @@ jobs:
           gh release create "${TAG_NAME}" -t "Release ${TAG_NAME/refs\/tags\//}" --notes "${BODY}"
 
       - if: "steps.tag.outputs.value != ''"
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/ekline-io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern=${{ steps.tag.outputs.value }}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+      
+      - if: "steps.tag.outputs.value != ''"
         name: Login to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
@@ -57,7 +69,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/ekline-io/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.value }}
+          tags: ${{ steps.meta.outputs.tags }}
 
       # Update corresponding major and minor tag.
       # e.g. Update v1 and v1.2 when releasing v1.2.3
