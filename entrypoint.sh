@@ -9,7 +9,6 @@ setGithubPullRequestId() {
     pull_request_id=""
   fi
 }
-
 if [ "$GITLAB_CI" = "true" ]; then
   input_workspace="$CI_PROJECT_DIR"
   rd_api_token="$INPUT_GITLAB_TOKEN"
@@ -28,8 +27,16 @@ elif [ "$GITHUB_ACTIONS" = "true" ]; then
   setGithubPullRequestId
   workflow_run_id="$GITHUB_RUN_ID"
   git_user_id="$GITHUB_ACTOR_ID"
+elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
+  input_workspace="$BITBUCKET_CLONE_DIR"
+  disable_suggestions=""
+  ci_platform="bitbucket"
+  git_repository_id="$BITBUCKET_REPO_UUID"
+  pull_request_id="$BITBUCKET_PR_ID"
+  workflow_run_id="$BITBUCKET_PIPELINE_UUID"
+  git_user_id="$BITBUCKET_STEP_TRIGGERER_UUID"
 else
-  echo "Not running in GitLab CI or GitHub Actions"
+  echo "Not running in GitLab CI or GitHub Actions or Bitbucket"
   exit 1
 fi
 
