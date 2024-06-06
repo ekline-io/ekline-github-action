@@ -35,6 +35,8 @@ elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   pull_request_id="$BITBUCKET_PR_ID"
   workflow_run_id="$BITBUCKET_PIPELINE_UUID"
   git_user_id="$BITBUCKET_STEP_TRIGGERER_UUID"
+  export INPUT_REPORTER='bitbucket-code-report'
+  export INPUT_FILTER_MODE='nofilter'
 else
   echo "Not running in GitLab CI or GitHub Actions or Bitbucket"
   exit 1
