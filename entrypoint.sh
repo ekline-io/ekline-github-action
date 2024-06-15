@@ -55,8 +55,17 @@ export PULL_REQUEST_ID="${pull_request_id}"
 export WORKFLOW_RUN_ID="${workflow_run_id}"
 export GIT_USER_ID="${git_user_id}"
 
+export EKLINE_APP_URL="https://ekline.io"
+export EXTERNAL_JOB_ID=$(uuidgen)
+
 output="ekOutput.jsonl"
 ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
+
+if [ "$GITHUB_ACTIONS" = "true" ]; then
+  export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
+  export REPOSITORY="$GITHUB_REPOSITORY"
+  npm run comment:github
+fi
 
 LEVEL=${INPUT_LEVEL:-info}
 

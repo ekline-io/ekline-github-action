@@ -1,0 +1,4 @@
+src/types/global.d.ts
+src/__tests__/e2e/bin.js
+.eslintrc.js
+jest.config.js

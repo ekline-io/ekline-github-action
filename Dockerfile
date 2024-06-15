@@ -1,5 +1,13 @@
 FROM ghcr.io/ekline-io/ekline-cli:7.0.2
 
-COPY entrypoint.sh /entrypoint.sh
+RUN apk add --no-cache npm util-linux --update
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN mkdir /code
+
+WORKDIR /code
+
+COPY . /code
+
+RUN npm install --prefix /code
+
+ENTRYPOINT ["/code/entrypoint.sh"]
