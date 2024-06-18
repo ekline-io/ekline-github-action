@@ -1,13 +1,6 @@
 #!/bin/sh
 set -e
 
-
-# Print the present working directory
-pwd
-
-# List the contents of the directory
-ls -lah
-
 setGithubPullRequestId() {
   is_pull_request="$(echo "$GITHUB_REF" | awk -F / '{print $2}')"
   if [ "${is_pull_request}" = "pull" ]; then
@@ -68,16 +61,9 @@ export EXTERNAL_JOB_ID=$(uuidgen)
 output="ekOutput.jsonl"
 ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
 
-# Print the present working directory
-pwd
-
-# List the contents of the directory
-ls -lah
-
 if [ "$GITHUB_ACTIONS" = "true" ]; then
   export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
   export REPOSITORY="$GITHUB_REPOSITORY"
-  npm run
   (cd /code && npm run comment:github)
 fi
 
