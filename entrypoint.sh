@@ -64,7 +64,7 @@ ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${
 if [ "$GITHUB_ACTIONS" = "true" ]; then
   export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
   export REPOSITORY="$GITHUB_REPOSITORY"
-  npm run comment:github
+  (cd /code && npm run comment:github)
 fi
 
 LEVEL=${INPUT_LEVEL:-info}
