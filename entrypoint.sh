@@ -9,6 +9,7 @@ setGithubPullRequestId() {
     pull_request_id=""
   fi
 }
+
 if [ "$GITLAB_CI" = "true" ]; then
   input_workspace="$CI_PROJECT_DIR"
   rd_api_token="$INPUT_GITLAB_TOKEN"
@@ -18,6 +19,8 @@ if [ "$GITLAB_CI" = "true" ]; then
   pull_request_id="$CI_MERGE_REQUEST_IID"
   workflow_run_id="$CI_PIPELINE_ID"
   git_user_id="$GITLAB_USER_ID"
+  base_branch="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+  head_branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
 elif [ "$GITHUB_ACTIONS" = "true" ]; then
   input_workspace="$GITHUB_WORKSPACE"
   rd_api_token="$INPUT_GITHUB_TOKEN"
@@ -27,6 +30,8 @@ elif [ "$GITHUB_ACTIONS" = "true" ]; then
   setGithubPullRequestId
   workflow_run_id="$GITHUB_RUN_ID"
   git_user_id="$GITHUB_ACTOR_ID"
+  base_branch="${GITHUB_BASE_REF}"
+  head_branch="${GITHUB_HEAD_REF}"
 elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   input_workspace="$BITBUCKET_CLONE_DIR"
   disable_suggestions=""
@@ -35,6 +40,8 @@ elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   pull_request_id="$BITBUCKET_PR_ID"
   workflow_run_id="$BITBUCKET_PIPELINE_UUID"
   git_user_id="$BITBUCKET_STEP_TRIGGERER_UUID"
+  base_branch="${BITBUCKET_PR_DESTINATION_BRANCH}"
+  head_branch="${BITBUCKET_BRANCH}"
   export INPUT_REPORTER='bitbucket-code-report'
   export INPUT_FILTER_MODE='nofilter'
 else
@@ -43,9 +50,27 @@ else
 fi
 
 if [ -n "${input_workspace}" ] ; then
-  cd "${input_workspace}/${INPUT_WORKDIR}" || exit
+  cd "${input_workspace}/${INPUT_WORKDIR}" || { echo "Failed to get ${input_workspace}/${INPUT_WORKDIR}"; exit 1; }
   git config --global --add safe.directory "${input_workspace}" || exit 1
 fi
+
+if [ "${pull_request_id}" ]; then
+  git fetch --unshallow || git fetch --depth=2 || { echo "Failed to fetch with --unshallow"; exit 1; }
+  if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
+    changed_files=$(git diff --name-only "origin/${base_branch}..origin/${head_branch}") || { echo "Failed to get changed files: origin/${base_branch}..origin/${head_branch}"; exit 1; }
+    echo "Changed files in this PR are:"
+  else
+    echo "Base branch or head branch is not specified."
+    exit 1
+  fi
+else
+  changed_files=""
+fi
+
+echo "${changed_files}"
+
+set -- ${changed_files}
+
 
 export REVIEWDOG_GITLAB_API_TOKEN="${rd_api_token}"
 export REVIEWDOG_GITHUB_API_TOKEN="${rd_api_token}"
@@ -54,12 +79,18 @@ export GIT_REPOSITORY_ID="${git_repository_id}"
 export PULL_REQUEST_ID="${pull_request_id}"
 export WORKFLOW_RUN_ID="${workflow_run_id}"
 export GIT_USER_ID="${git_user_id}"
-
 export EKLINE_APP_URL="https://ekline.io"
 export EXTERNAL_JOB_ID=$(uuidgen)
 
 output="ekOutput.jsonl"
-ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}"  -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
+
+cf_option=""
+if [ -n "${changed_files}" ]; then
+  cf_option="-cf $@"
+fi
+
+# `$@` is the array of valid changed files.
+ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
 
 if [ "$GITHUB_ACTIONS" = "true" ]; then
   export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
