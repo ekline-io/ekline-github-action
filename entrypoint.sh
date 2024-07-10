@@ -100,9 +100,13 @@ fi
 
 LEVEL=${INPUT_LEVEL:-info}
 
-< "$output" reviewdog -f="rdjsonl" \
-  -name="EkLine" \
-  -reporter="${INPUT_REPORTER}" \
-  -filter-mode="${INPUT_FILTER_MODE}" \
-  -level="${LEVEL}" \
-  ${INPUT_REVIEWDOG_FLAGS}
+if [ -s "$output" ]; then
+  < "$output" reviewdog -f="rdjsonl" \
+    -name="EkLine" \
+    -reporter="${INPUT_REPORTER}" \
+    -filter-mode="${INPUT_FILTER_MODE}" \
+    -level="${LEVEL}" \
+    ${INPUT_REVIEWDOG_FLAGS}
+else
+  echo "No issues found."
+fi
