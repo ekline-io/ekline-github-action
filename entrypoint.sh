@@ -19,6 +19,7 @@ if [ "$GITLAB_CI" = "true" ]; then
   pull_request_id="$CI_MERGE_REQUEST_IID"
   workflow_run_id="$CI_PIPELINE_ID"
   git_user_id="$GITLAB_USER_ID"
+  enable_ai_suggestions="$INPUT_ENABLE_AI_SUGGESTIONS"
   base_branch="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
   head_branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
 elif [ "$GITHUB_ACTIONS" = "true" ]; then
@@ -30,6 +31,7 @@ elif [ "$GITHUB_ACTIONS" = "true" ]; then
   setGithubPullRequestId
   workflow_run_id="$GITHUB_RUN_ID"
   git_user_id="$GITHUB_ACTOR_ID"
+  enable_ai_suggestions="$INPUT_ENABLE_AI_SUGGESTIONS"
   base_branch="${GITHUB_BASE_REF}"
   head_branch="${GITHUB_HEAD_REF}"
 elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
@@ -40,6 +42,7 @@ elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   pull_request_id="$BITBUCKET_PR_ID"
   workflow_run_id="$BITBUCKET_PIPELINE_UUID"
   git_user_id="$BITBUCKET_STEP_TRIGGERER_UUID"
+  enable_ai_suggestions="$INPUT_ENABLE_AI_SUGGESTIONS"
   base_branch="${BITBUCKET_PR_DESTINATION_BRANCH}"
   head_branch="${BITBUCKET_BRANCH}"
   export INPUT_REPORTER='bitbucket-code-report'
@@ -84,13 +87,19 @@ export EXTERNAL_JOB_ID=$(uuidgen)
 
 output="ekOutput.jsonl"
 
+ai_suggestions=""
+if [ -z "$enable_ai_suggestions" ] || [ "$enable_ai_suggestions" = "true" ]; then
+  ai_suggestions="--ai-suggestions"
+fi
+
 cf_option=""
 if [ -n "${changed_files}" ]; then
   cf_option="-cf $@"
 fi
 
-# `$@` is the array of valid changed files.
-ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}"
+
+ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}" "${ai_suggestions}"
+
 
 if [ "$GITHUB_ACTIONS" = "true" ]; then
   export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
@@ -100,9 +109,14 @@ fi
 
 LEVEL=${INPUT_LEVEL:-info}
 
-< "$output" reviewdog -f="rdjsonl" \
-  -name="EkLine" \
-  -reporter="${INPUT_REPORTER}" \
-  -filter-mode="${INPUT_FILTER_MODE}" \
-  -level="${LEVEL}" \
-  ${INPUT_REVIEWDOG_FLAGS}
+
+if [ -s "$output" ]; then
+  < "$output" reviewdog -f="rdjsonl" \
+    -name="EkLine" \
+    -reporter="${INPUT_REPORTER}" \
+    -filter-mode="${INPUT_FILTER_MODE}" \
+    -level="${LEVEL}" \
+    ${INPUT_REVIEWDOG_FLAGS}
+else
+  echo "No issues found."
+fi
