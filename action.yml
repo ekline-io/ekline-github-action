@@ -40,7 +40,7 @@ inputs:
     default: ''
   enable_ai_suggestions:
     description: 'Enable AI suggestions'
-    default: ''
+    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
