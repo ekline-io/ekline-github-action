@@ -38,6 +38,9 @@ inputs:
   ignore_rule:
     description: 'Ignore the rules that are passed in as comma seperated values (eg: EK1,EK4)'
     default: ''
+  enable_ai_suggestions:
+    description: 'Enable AI suggestions'
+    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
