@@ -100,17 +100,15 @@ fi
 
 ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}" "${ai_suggestions}"
 
-
-if [ "$GITHUB_ACTIONS" = "true" ]; then
-  export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
-  export REPOSITORY="$GITHUB_REPOSITORY"
-  (cd /code && npm run comment:github)
-fi
-
-LEVEL=${INPUT_LEVEL:-info}
-
-
 if [ -s "$output" ]; then
+  if [ "$GITHUB_ACTIONS" = "true" ]; then
+    export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
+    export REPOSITORY="$GITHUB_REPOSITORY"
+    (cd /code && npm run comment:github)
+  fi
+
+  LEVEL=${INPUT_LEVEL:-info}
+
   < "$output" reviewdog -f="rdjsonl" \
     -name="EkLine" \
     -reporter="${INPUT_REPORTER}" \
