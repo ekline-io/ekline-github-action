@@ -1,4 +1,4 @@
-FROM ghcr.io/ekline-io/ekline-cli:7.5.0
+FROM ghcr.io/ekline-io/ekline-cli:7.5.4
 
 RUN apk add --no-cache npm util-linux --update
 
