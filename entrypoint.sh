@@ -88,7 +88,7 @@ export EXTERNAL_JOB_ID=$(uuidgen)
 output="ekOutput.jsonl"
 
 ai_suggestions=""
-if [ -z "$enable_ai_suggestions" ] || [ "$enable_ai_suggestions" = "true" ]; then
+if [ -n "${pull_request_id}" ] || [ "$enable_ai_suggestions" = "true" ]; then
   ai_suggestions="--ai-suggestions"
 fi
 
