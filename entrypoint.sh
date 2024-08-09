@@ -58,9 +58,10 @@ if [ -n "${input_workspace}" ] ; then
 fi
 
 if [ "${pull_request_id}" ]; then
+  git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
   git fetch --unshallow || git fetch --depth=2 || { echo "Failed to fetch with --unshallow"; exit 1; }
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
-    changed_files=$(git diff --name-only "origin/${base_branch}..origin/${head_branch}") || { echo "Failed to get changed files: origin/${base_branch}..origin/${head_branch}"; exit 1; }
+    changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
     echo "Changed files in this PR are:"
   else
     echo "Base branch or head branch is not specified."
