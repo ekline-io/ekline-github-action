@@ -59,6 +59,10 @@ fi
 
 if [ "${pull_request_id}" ]; then
   git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
+  if [ -z "$(git branch -r | grep "origin/${head_branch}")" ]; then
+    echo "Branch ${head_branch} does not exist in the remote repository. Please sync your fork."
+    exit 1
+  fi
   git fetch --unshallow || git fetch --depth=2 || { echo "Failed to fetch with --unshallow"; exit 1; }
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
     changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
