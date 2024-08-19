@@ -108,7 +108,6 @@ if [ -n "${changed_files}" ]; then
   cf_option="-cf $@"
 fi
 
-
 ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}" "${ai_suggestions}"
 
 if [ -s "$output" ]; then
