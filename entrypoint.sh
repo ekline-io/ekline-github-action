@@ -58,10 +58,16 @@ if [ -n "${input_workspace}" ] ; then
 fi
 
 if [ "${pull_request_id}" ]; then
-  git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
-  if [ -z "$(git branch -r | grep "origin/${head_branch}")" ]; then
-    echo "Branch ${head_branch} does not exist in the remote repository. Please sync your fork."
-    exit 1
+  if [ "$GITLAB_CI" = "true" ]; then
+    if [ "$CI_MERGE_REQUEST_SOURCE_PROJECT_URL" = "$CI_PROJECT_URL" ]; then
+      git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches from the same repository"; exit 1; }
+    else
+      git fetch origin "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
+      git remote add fork "${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}" || { echo "Failed to add fork as remote"; exit 1; }
+      git fetch fork "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+    fi
+  else
+    git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
   fi
   git fetch --unshallow || git fetch --depth=2 || { echo "Failed to fetch with --unshallow"; exit 1; }
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
