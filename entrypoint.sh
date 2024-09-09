@@ -66,10 +66,33 @@ if [ "${pull_request_id}" ]; then
       git remote add fork "${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}" || { echo "Failed to add fork as remote"; exit 1; }
       git fetch fork "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
     fi
-  else
-    git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
+  elif [ "$GITHUB_ACTIONS" = "true" ]; then
+    if [ -f "$GITHUB_EVENT_PATH" ]; then
+      head_repo_url=$(cat "$GITHUB_EVENT_PATH" | grep '"clone_url"' | head -n 1 | awk -F '"clone_url":' '{print $2}' | tr -d '", ')
+      base_repo_url=$(cat "$GITHUB_EVENT_PATH" | grep '"repo"' | head -n 1 | awk -F '"url":' '{print $2}' | tr -d '", ')
+
+      if [ "$head_repo_url" != "$base_repo_url" ]; then
+        echo "PR is from a forked repository: $head_repo_url"
+        git fetch origin "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
+
+        git remote add fork "$head_repo_url" || { echo "Failed to add fork as remote"; exit 1; }
+        git fetch fork "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+      fi
+    fi
+  elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
+    origin_url=$(git remote get-url origin)
+    upstream_url=$(git remote get-url upstream 2>/dev/null || echo "")
+    if [ "$origin_url" != "$upstream_url" ] && [ "$upstream_url" != "" ] ; then
+      git fetch upstream "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
+      git fetch origin "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+    else
+      git checkout --detach || { echo "Failed to detach HEAD"; exit 1; }
+    fi
   fi
-  git fetch --unshallow || git fetch --depth=2 || { echo "Failed to fetch with --unshallow"; exit 1; }
+  git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
+  if [ -f "$(git rev-parse --git-dir)/shallow" ]; then
+    git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
+  fi
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
     changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
     echo "Changed files in this PR are:"
@@ -95,18 +118,18 @@ export WORKFLOW_RUN_ID="${workflow_run_id}"
 export GIT_USER_ID="${git_user_id}"
 export EKLINE_APP_URL="https://ekline.io"
 export EXTERNAL_JOB_ID=$(uuidgen)
+export EKLINE_APP_NAME="${ci_platform}"
 
 output="ekOutput.jsonl"
-
 ai_suggestions=""
-if [ -n "${pull_request_id}" ] || [ "$enable_ai_suggestions" = "true" ]; then
+if [ -n "${pull_request_id}" ] || [ "$enable_ai_suggestions" = "true" ] ; then
   ai_suggestions="--ai-suggestions"
 fi
-
 cf_option=""
 if [ -n "${changed_files}" ]; then
   cf_option="-cf $@"
 fi
+
 
 ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}" "${ai_suggestions}"
 
