@@ -33,7 +33,7 @@ inputs:
     description: 'Token for EkLine application'
     required: true
   content_dir:
-    description: 'Content directory relative to the root directory.'
+    description: 'Multiple space separated content directories relative to the root directory.'
     default: '.'
   ignore_rule:
     description: 'Ignore the rules that are passed in as comma seperated values (eg: EK1,EK4)'

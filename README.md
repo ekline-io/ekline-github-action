@@ -31,7 +31,7 @@ Improve the quality and consistency of your documentation with EkLine, an automa
 ```yaml
 inputs:
   content_dir:
-    description: 'Content directory relative to the root directory.'
+    description: 'Multiple space separated content directories relative to the root directory.'
     default: '.'
   ek_token:
     description: 'Token for EkLine application'
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ekline-io/ekline-github-action@v6
         with:
-          content_dir: ./src/docs
+          content_dir: ./src/docs ./src/content
           ek_token: ${{ secrets.ek_token }}
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
