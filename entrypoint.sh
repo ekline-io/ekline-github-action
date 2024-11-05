@@ -1,6 +1,19 @@
 #!/bin/sh
 set -e
 
+# Function to print all INPUT_ variables if debug mode is enabled.
+# Caution: This will print all secrets as well. Use it cautiously.
+print_debug_info() {
+  if [ "$INPUT_DEBUG" = "true" ]; then
+    echo "Debug Mode: Printing all INPUT_ variables"
+    env | grep '^INPUT_' | while IFS= read -r var; do
+      echo "$var"
+    done
+  fi
+}
+
+print_debug_info
+
 setGithubPullRequestId() {
   is_pull_request="$(echo "$GITHUB_REF" | awk -F / '{print $2}')"
   if [ "${is_pull_request}" = "pull" ]; then
