@@ -48,7 +48,7 @@ inputs:
     description: 'Reporter of EkLine review command [github-pr-check,github-check,github-pr-review].'
     default: 'github-pr-check'
   ignore_rule:
-    description: 'Ignore the rules that are passed in as comma separated values (eg: EK00001,EK00004). Use this flag to skip specific rules during the review process.'
+    description: 'Ignore the rules that are passed in as comma-separated values (eg: EK00001,EK00004). Use this flag to skip specific rules during the review process.'
     default: ''
   debug:
     description: 'Enable debug mode to print all environment variables starting with INPUT_ when set to true.'
