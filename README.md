@@ -31,7 +31,11 @@ Improve the quality and consistency of your documentation with EkLine, an automa
 ```yaml
 inputs:
   content_dir:
-    description: 'Content directory relative to the root directory.'
+    description: 'Content directories relative to the root. Specify a single path or multiple paths (one per line). Example:
+      content_dir: ./testData
+      content_dir: |
+        ./testData
+        ./testData2'
     default: '.'
   ek_token:
     description: 'Token for EkLine application'

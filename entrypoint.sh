@@ -144,7 +144,19 @@ if [ -n "${changed_files}" ]; then
 fi
 
 
-ekline -cd "${INPUT_CONTENT_DIR}" -et "${INPUT_EK_TOKEN}" ${cf_option} -o "${output}" -i "${INPUT_IGNORE_RULE}" "${disable_suggestions}" "${ai_suggestions}"
+ekline_args=""
+while IFS= read -r dir; do
+  if [ -n "$dir" ]; then
+    ekline_args="$ekline_args -cd \"$dir\""
+  fi
+done <<EOF
+$INPUT_CONTENT_DIR
+EOF
+
+ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
+
+eval "$ekline_command"
+
 
 if [ -s "$output" ]; then
   if [ "$GITHUB_ACTIONS" = "true" ]; then
