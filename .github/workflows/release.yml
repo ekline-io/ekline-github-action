@@ -8,6 +8,9 @@ on:
   pull_request:
     types:
       - labeled
+  repository_dispatch:
+    types:
+      - ekline-cli-release
 
 env:
   REGISTRY: ghcr.io
@@ -15,7 +18,7 @@ env:
 
 jobs:
   release:
-    if: github.event.action != 'labeled'
+    if: github.event_name != 'repository_dispatch' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -77,6 +80,137 @@ jobs:
         if: "!steps.bumpr.outputs.skip"
         with:
           tag: ${{ steps.bumpr.outputs.next_version }}
+      
+      - id: "tag_create"
+        if: "!steps.bumpr.outputs.skip"
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "latest"
+          force_push_tag: true
+          message: "Latest release"
+
+  dispatch-release:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure all history and tags are fetched
+
+      # Step 1: Identify Release Type from Dispatch Event
+      - name: Identify Release Type
+        id: identify_release
+        run: |
+          RELEASE_TYPE="${{ github.event.client_payload.releaseType }}"
+          if [ -z "$RELEASE_TYPE" ]; then
+            RELEASE_TYPE="patch"
+          fi
+          echo "releaseType=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "Determined release type: $RELEASE_TYPE"
+
+      - name: Get Latest Tag
+        id: get_latest_tag
+        run: |
+          # Get the latest release tag
+          LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag: $LATEST_TAG"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 3: Bump Version Based on Release Type
+      - name: Bump Version
+        id: bump_version
+        run: |
+          LATEST_TAG="${{ steps.get_latest_tag.outputs.latest_tag }}"
+          RELEASE_TYPE="${{ steps.identify_release.outputs.releaseType }}"
+
+          # Ensure the latest tag starts with 'v'
+          if [[ "$LATEST_TAG" != v* ]]; then
+            echo "Latest tag does not start with 'v'. Cannot proceed."
+            exit 1
+          fi
+
+          # Extract version numbers
+          VERSION=${LATEST_TAG#v}
+
+          # Split version into major, minor, patch
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # Bump the version based on releaseType
+          if [[ "$RELEASE_TYPE" == "major" ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [[ "$RELEASE_TYPE" == "minor" ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [[ "$RELEASE_TYPE" == "patch" ]]; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "Invalid releaseType: $RELEASE_TYPE"
+            exit 1
+          fi
+
+          # Construct new version and tag
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          NEW_TAG="v${NEW_VERSION}"
+          echo "New version: $NEW_VERSION"
+          echo "New tag: $NEW_TAG"
+
+          # Create the new tag pointing to the current commit
+          git tag "$NEW_TAG"
+          git push origin "$NEW_TAG"
+
+          # Set the new tag as output
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+          # Set the next version as output
+          echo "next_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      # Step 4: Create GitHub Release
+      - name: Create GitHub Release
+        if: steps.bump_version.outcome == 'success'
+        run: |
+          gh release create ${{ steps.bump_version.outputs.new_tag }} \
+            --title "Release ${{ steps.bump_version.outputs.new_tag }}" \
+            --notes "Release ${{ steps.bump_version.outputs.new_tag }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/ekline-io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern=v{{version}},value=${{ steps.bump_version.outputs.new_tag }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ steps.bump_version.outputs.new_tag }}
+            type=semver,pattern=v{{major}},value=${{ steps.bump_version.outputs.new_tag }}
+            type=raw,value=latest
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+      # Update corresponding major and minor tag.
+      # e.g. Update v1 and v1.2 when releasing v1.2.3
+      - uses: haya14busa/action-update-semver@v1
+        if: "!steps.bumpr.outputs.skip"
+        with:
+          tag: ${{ steps.bump_version.outputs.next_version }}
       
       - id: "tag_create"
         if: "!steps.bumpr.outputs.skip"
