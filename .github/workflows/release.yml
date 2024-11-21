@@ -90,7 +90,7 @@ jobs:
           message: "Latest release"
 
   dispatch-release:
-    if: github.event_name == 'repository_dispatch'
+    if: github.event_name == 'repository_dispatch' && github.event.client_payload.releaseType != 'major'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -175,7 +175,7 @@ jobs:
         run: |
           gh release create ${{ steps.bump_version.outputs.new_tag }} \
             --title "Release ${{ steps.bump_version.outputs.new_tag }}" \
-            --notes "Release ${{ steps.bump_version.outputs.new_tag }}"
+            --notes "Updated EkLine CLI version to ${{ github.event.client_payload.releaseVersion }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
