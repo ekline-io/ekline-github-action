@@ -147,7 +147,7 @@ jobs:
 
   dispatch-release:
     needs: [check-version]
-    if: github.event_name == 'repository_dispatch' && needs.check-version.outputs.version_match == 'true'
+    if: github.event_name == 'repository_dispatch' && needs.check-version.outputs.versions_match == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
