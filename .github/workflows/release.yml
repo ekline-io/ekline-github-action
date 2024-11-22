@@ -89,8 +89,65 @@ jobs:
           force_push_tag: true
           message: "Latest release"
 
+  check-version:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      versions_match: ${{ steps.compare_versions.outputs.match }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure all history and tags are fetched
+
+      # Step 1: Identify Release Type and Version from Dispatch Event
+      - name: Identify Release Type and Version
+        id: identify_release
+        run: |
+          RELEASE_TYPE="${{ github.event.client_payload.releaseType }}"
+          RELEASE_VERSION="${{ github.event.client_payload.releaseVersion }}"
+          if [ -z "$RELEASE_TYPE" ]; then
+            RELEASE_TYPE="patch"
+          fi
+          echo "releaseType=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "releaseVersion=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "Determined release type: $RELEASE_TYPE"
+          echo "Release version: $RELEASE_VERSION"
+
+      # Step 2: Extract Major Version from Release Version
+      - name: Extract Major Version from Release Version
+        id: extract_release_version
+        run: |
+          RELEASE_VERSION="${{ steps.identify_release.outputs.releaseVersion }}"
+          RELEASE_MAJOR_VERSION=$(echo "$RELEASE_VERSION" | cut -d'.' -f1)
+          echo "release_major_version=$RELEASE_MAJOR_VERSION" >> $GITHUB_OUTPUT
+          echo "Release major version: $RELEASE_MAJOR_VERSION"
+
+      # Step 3: Extract Major Version from Dockerfile
+      - name: Extract Major Version from Dockerfile
+        id: extract_dockerfile_version
+        run: |
+          DOCKERFILE_PATH="Dockerfile"
+          DOCKERFILE_MAJOR_VERSION=$(grep '^FROM ghcr.io/ekline-io/ekline-cli:' "$DOCKERFILE_PATH" | sed 's/.*:\([0-9]\+\).*/\1/')
+          echo "dockerfile_major_version=$DOCKERFILE_MAJOR_VERSION" >> $GITHUB_OUTPUT
+          echo "Dockerfile major version: $DOCKERFILE_MAJOR_VERSION"
+
+      # Step 4: Compare Major Versions
+      - name: Compare Major Versions
+        id: compare_versions
+        run: |
+          if [ "${{ steps.extract_dockerfile_version.outputs.dockerfile_major_version }}" != "${{ steps.extract_release_version.outputs.release_major_version }}" ]; then
+            echo "Major versions do not match. Skipping dispatch release."
+            echo "match=false" >> $GITHUB_OUTPUT
+          else
+            echo "Major versions match."
+            echo "match=true" >> $GITHUB_OUTPUT
+          fi
+
+
   dispatch-release:
-    if: github.event_name == 'repository_dispatch' && github.event.client_payload.releaseType != 'major'
+    needs: [check-version]
+    if: github.event_name == 'repository_dispatch' && needs.check-version.outputs.version_match == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
