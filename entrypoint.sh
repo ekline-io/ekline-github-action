@@ -138,11 +138,16 @@ ai_suggestions=""
 if [ -n "${pull_request_id}" ] || [ "$enable_ai_suggestions" = "true" ] ; then
   ai_suggestions="--ai-suggestions"
 fi
+
 cf_option=""
 if [ -n "${changed_files}" ]; then
-  cf_option="-cf $@"
+    cf_option="-cf"
+    while IFS= read -r file; do
+        cf_option="$cf_option \"$file\""
+    done <<EOF
+${changed_files}
+EOF
 fi
-
 
 ekline_args=""
 while IFS= read -r dir; do
