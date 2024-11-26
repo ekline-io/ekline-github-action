@@ -61,6 +61,9 @@ elif [ "$GITHUB_ACTIONS" = "true" ]; then
   else
     echo "Not a pull request; cannot fetch PR creator."
   fi
+  cd /code
+  triggering_actor=$(npm run get:userId --silent)
+
 elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   input_workspace="$BITBUCKET_CLONE_DIR"
   disable_suggestions=""
@@ -159,7 +162,6 @@ cf_option=""
 if [ -n "${changed_files}" ]; then
   cf_option="-cf $@"
 fi
-
 
 ekline_args=""
 while IFS= read -r dir; do

@@ -1,7 +1,8 @@
 {
   "name": "ekline-github-action",
   "scripts": {
-    "comment:github": "TS_NODE_FILES=true npm i && npx ts-node ./src/github.ts"
+    "comment:github": "TS_NODE_FILES=true npm i && npx ts-node ./src/github.ts",
+    "get:userId": "TS_NODE_FILES=true npm i && npx ts-node ./src/getUserId.ts"
   },
   "dependencies": {
     "@octokit/rest": "^20.1.1",
