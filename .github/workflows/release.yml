@@ -170,7 +170,7 @@ jobs:
         id: get_latest_tag
         run: |
           # Get the latest release tag
-          LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
+          LATEST_TAG=$(gh release view  --json tagName --jq '.tagName')
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
           echo "Latest tag: $LATEST_TAG"
         env:
