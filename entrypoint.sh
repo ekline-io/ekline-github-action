@@ -35,6 +35,13 @@ if [ "$GITLAB_CI" = "true" ]; then
   enable_ai_suggestions="$INPUT_ENABLE_AI_SUGGESTIONS"
   base_branch="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
   head_branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+  triggering_actor="$GITLAB_USER_NAME"
+  if [ -n "$pull_request_id" ]; then
+    pr_creator=$(curl -s --header "PRIVATE-TOKEN: $rd_api_token" \
+      "https://gitlab.com/api/v4/projects/${git_repository_id}/merge_requests/${pull_request_id}" | jq -r '.author.id')
+  else
+    echo "Not a merge request; cannot fetch PR creator."
+  fi
 elif [ "$GITHUB_ACTIONS" = "true" ]; then
   input_workspace="$GITHUB_WORKSPACE"
   rd_api_token="$INPUT_GITHUB_TOKEN"
@@ -47,6 +54,16 @@ elif [ "$GITHUB_ACTIONS" = "true" ]; then
   enable_ai_suggestions="$INPUT_ENABLE_AI_SUGGESTIONS"
   base_branch="${GITHUB_BASE_REF}"
   head_branch="${GITHUB_HEAD_REF}"
+  triggering_actor="$GITHUB_TRIGGERING_ACTOR"
+  if [ -n "$pull_request_id" ]; then
+    pr_creator=$(curl -s -H "Authorization: token $rd_api_token" \
+        "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${pull_request_id}" | jq -r '.user.id')
+  else
+    echo "Not a pull request; cannot fetch PR creator."
+  fi
+  cd /code
+  triggering_actor=$(npm run get:userId --silent)
+
 elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   input_workspace="$BITBUCKET_CLONE_DIR"
   disable_suggestions=""
@@ -60,6 +77,7 @@ elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   head_branch="${BITBUCKET_BRANCH}"
   export INPUT_REPORTER='bitbucket-code-report'
   export INPUT_FILTER_MODE='nofilter'
+  triggering_actor="$BITBUCKET_STEP_TRIGGERER_UUID"
 else
   echo "Not running in GitLab CI or GitHub Actions or Bitbucket"
   exit 1
@@ -132,6 +150,8 @@ export GIT_USER_ID="${git_user_id}"
 export EKLINE_APP_URL="https://ekline.io"
 export EXTERNAL_JOB_ID=$(uuidgen)
 export EKLINE_APP_NAME="${ci_platform}"
+export EKLINE_TRIGGERING_ACTOR="${triggering_actor}"
+export EKLINE_PR_CREATOR="${pr_creator}"
 
 output="ekOutput.jsonl"
 ai_suggestions=""
