@@ -152,6 +152,8 @@ export EXTERNAL_JOB_ID=$(uuidgen)
 export EKLINE_APP_NAME="${ci_platform}"
 export EKLINE_TRIGGERING_ACTOR="${triggering_actor}"
 export EKLINE_PR_CREATOR="${pr_creator}"
+export EKLINE_GIT_SOURCE_BRANCH="${head_branch}"
+export EKLINE_GIT_TARGET_BRANCH="${base_branch}"
 
 output="ekOutput.jsonl"
 ai_suggestions=""
