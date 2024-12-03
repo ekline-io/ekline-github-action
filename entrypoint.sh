@@ -139,7 +139,6 @@ echo "${changed_files}"
 
 set -- ${changed_files}
 
-
 export REVIEWDOG_GITLAB_API_TOKEN="${rd_api_token}"
 export REVIEWDOG_GITHUB_API_TOKEN="${rd_api_token}"
 export CI_PLATFORM="${ci_platform}"
