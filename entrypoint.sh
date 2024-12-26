@@ -83,6 +83,22 @@ else
   exit 1
 fi
 
+if [ -z "$pull_request_id" ]; then
+  if [ "$ci_platform" = "github" ]; then
+    resolved_branch="$(echo "$GITHUB_REF" | sed 's|refs/heads/||')"
+    base_branch="$resolved_branch"
+    head_branch="$resolved_branch"
+  elif [ "$ci_platform" = "gitlab" ]; then
+    resolved_branch="$CI_COMMIT_BRANCH"
+    base_branch="$resolved_branch"
+    head_branch="$resolved_branch"
+  elif [ "$ci_platform" = "bitbucket" ]; then
+    resolved_branch="$BITBUCKET_BRANCH"
+    base_branch="$resolved_branch"
+    head_branch="$resolved_branch"
+  fi
+fi
+
 if [ -n "${input_workspace}" ] ; then
   cd "${input_workspace}/${INPUT_WORKDIR}" || { echo "Failed to get ${input_workspace}/${INPUT_WORKDIR}"; exit 1; }
   git config --global --add safe.directory "${input_workspace}" || exit 1
