@@ -46,7 +46,7 @@ inputs:
     description: 'Enable AI suggestions'
     default: false
   openapi_spec:
-    description: 'Path to OpenAPI specification file to validate'
+    description: 'Path to OpenAPI specification file to review'
     required: false
     default: ''
 runs:
