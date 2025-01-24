@@ -4,10 +4,14 @@ on:
     branches:
       - main
   pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: ./.github/actions/fetch-reviewdog
+      with:
+        token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag ${{ github.repository }}:$(date +%s)
