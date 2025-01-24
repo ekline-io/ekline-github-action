@@ -165,6 +165,7 @@ export GIT_USER_ID="${git_user_id}"
 export EKLINE_APP_URL="https://ekline.io"
 export EXTERNAL_JOB_ID=$(uuidgen)
 export EKLINE_APP_NAME="${ci_platform}"
+export EKLINE_APP_VERSION=$(node -p -e "require('./package.json').version")
 export EKLINE_TRIGGERING_ACTOR="${triggering_actor}"
 export EKLINE_PR_CREATOR="${pr_creator}"
 export EKLINE_GIT_SOURCE_BRANCH="${head_branch}"
@@ -195,8 +196,11 @@ done <<EOF
 $INPUT_CONTENT_DIR
 EOF
 
-ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
+if [ -n "$INPUT_OPENAPI_SPEC" ]; then
+    ekline_args="$ekline_args -oas \"$INPUT_OPENAPI_SPEC\""
+fi
 
+ekline_command="ekline $ekline_args -et '${INPUT_EK_TOKEN}' ${cf_option} -o '${output}' -i '${INPUT_IGNORE_RULE}' ${disable_suggestions} ${ai_suggestions}"
 eval "$ekline_command"
 
 
