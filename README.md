@@ -85,13 +85,8 @@ jobs:
           ek_token: ${{ secrets.ek_token }}
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
+          openapi_spec: './api/openapi.yaml'
           ignore_rule: "EK00010,EK00003"  # Optional
-                    exclude_directories: |
-            docs/temp
-            docs/draft
-          exclude_files: |
-            docs/CHANGELOG.md
-            docs/README.md
 ```
 
 ## Reporters
