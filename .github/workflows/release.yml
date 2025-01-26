@@ -67,11 +67,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - if: "steps.tag.outputs.value != ''"
-        uses: ./.github/actions/fetch-reviewdog
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-
-      - if: "steps.tag.outputs.value != ''"
         name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -253,10 +248,6 @@ jobs:
             type=semver,pattern=v{{major}},value=${{ steps.bump_version.outputs.new_tag }}
             type=raw,value=latest
       
-      - uses: ./.github/actions/fetch-reviewdog
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
