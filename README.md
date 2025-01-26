@@ -142,6 +142,6 @@ so EkLine reviewer will use [Check annotation](https://developer.github.com/v3/c
 
 To ignore specific rules during the review process, you can use the `ignore_rule` flag. This flag accepts a comma-separated list of rule identifiers that you wish to skip.
 
-For example, if you want to ignore rules `EK00001` and `EK00004`, you can set the `ignore_rule` flag in your configuration like this:
+For example, if you want to ignore rules `EK00001` , `EK00004` and `EK00005`, you can set the `ignore_rule` flag in your configuration like this:
 ```yaml
   ignore_rule: "EK00001,EK00004"
