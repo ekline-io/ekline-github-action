@@ -195,8 +195,11 @@ done <<EOF
 $INPUT_CONTENT_DIR
 EOF
 
-ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
+if [ -n "$INPUT_OPENAPI_SPEC" ]; then
+    ekline_args="$ekline_args -oas \"$INPUT_OPENAPI_SPEC\""
+fi
 
+ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
 eval "$ekline_command"
 
 

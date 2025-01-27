@@ -54,6 +54,9 @@ inputs:
   ignore_rule:
     description: 'Ignore the rules that are passed in as comma-separated values (eg: EK00001,EK00004). Use this flag to skip specific rules during the review process.'
     default: ''
+  openapi_spec:
+    description: 'Path to OpenAPI specification file to review'
+    required: false
   debug:
     description: 'Enable debug mode to print all environment variables starting with INPUT_ when set to true.'
     default: 'false'
@@ -82,6 +85,7 @@ jobs:
           ek_token: ${{ secrets.ek_token }}
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
+          openapi_spec: './api/openapi.yaml'
           ignore_rule: "EK00010,EK00003"  # Optional
 ```
 
