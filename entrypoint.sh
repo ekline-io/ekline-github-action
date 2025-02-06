@@ -199,7 +199,37 @@ if [ -n "$INPUT_OPENAPI_SPEC" ]; then
     ekline_args="$ekline_args -oas \"$INPUT_OPENAPI_SPEC\""
 fi
 
-ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
+exclude_dirs=""
+if [ -n "$INPUT_EXCLUDE_DIRECTORIES" ]; then
+    while IFS= read -r dir; do
+        dir=$(echo "$dir" | xargs)  
+        if [ -n "$dir" ]; then
+            if [ -z "$exclude_dirs" ]; then
+                exclude_dirs="-ed"
+            fi
+            exclude_dirs="$exclude_dirs '$dir'"
+        fi
+    done <<EOF
+$INPUT_EXCLUDE_DIRECTORIES
+EOF
+fi
+
+exclude_files=""
+if [ -n "$INPUT_EXCLUDE_FILES" ]; then
+    while IFS= read -r file; do
+        file=$(echo "$file" | xargs)  
+        if [ -n "$file" ]; then
+            if [ -z "$exclude_files" ]; then
+                exclude_files="-ef"
+            fi
+            exclude_files="$exclude_files '$file'"
+        fi
+    done <<EOF
+$INPUT_EXCLUDE_FILES
+EOF
+fi
+
+ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} ${exclude_dirs} ${exclude_files} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
 eval "$ekline_command"
 
 

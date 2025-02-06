@@ -49,6 +49,22 @@ inputs:
     description: 'Path to OpenAPI specification file to review'
     required: false
     default: ''
+  exclude_directories:
+    description: 'Directories to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
+      exclude_directories: ./node_modules
+      exclude_directories: |
+        ./node_modules
+        ./dist'
+    required: false
+    default: ''
+  exclude_files:
+    description: 'Files to exclude from analysis. Specify a single file or multiple files (one per line). Example:
+      exclude_files: ./README.md
+      exclude_files: |
+        ./README.md
+        ./CHANGELOG.md'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'

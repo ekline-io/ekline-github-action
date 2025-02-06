@@ -57,6 +57,20 @@ inputs:
   openapi_spec:
     description: 'Path to OpenAPI specification file to review'
     required: false
+  exclude_directories:
+    description: 'Directories to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
+      exclude_directories: ./node_modules
+      exclude_directories: |
+        ./node_modules
+        ./dist'
+    default: ''
+  exclude_files:
+    description: 'Files to exclude from analysis. Specify a single file or multiple files (one per line). Example:
+      exclude_files: ./README.md
+      exclude_files: |
+        ./README.md
+        ./CHANGELOG.md'
+    default: ''
   debug:
     description: 'Enable debug mode to print all environment variables starting with INPUT_ when set to true.'
     default: 'false'
@@ -87,6 +101,12 @@ jobs:
           reporter: github-pr-review
           openapi_spec: './api/openapi.yaml'
           ignore_rule: "EK00010,EK00003"  # Optional
+          exclude_directories: |  # Optional
+            ./node_modules
+            ./dist
+          exclude_files: |  # Optional
+            ./CHANGELOG.md
+            ./LICENSE
 ```
 
 ## Reporters
