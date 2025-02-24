@@ -229,7 +229,12 @@ $INPUT_EXCLUDE_FILES
 EOF
 fi
 
-ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} ${exclude_dirs} ${exclude_files} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions}"
+debug_flag=""
+if [ "$INPUT_DEBUG" = "true" ]; then
+    debug_flag="--debug"
+fi
+
+ekline_command="ekline $ekline_args -et \"${INPUT_EK_TOKEN}\" ${cf_option} ${exclude_dirs} ${exclude_files} -o \"${output}\" -i \"${INPUT_IGNORE_RULE}\" ${disable_suggestions} ${ai_suggestions} ${debug_flag}"
 eval "$ekline_command"
 
 
