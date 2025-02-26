@@ -14,7 +14,7 @@ inputs:
     default: 'info'
   reporter:
     description: 'Reporter of reviewdog command [github-pr-check,github-pr-review].'
-    default: 'github-pr-check'
+    default: 'github-pr-review'
   filter_mode:
     description: |
       Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
@@ -65,6 +65,9 @@ inputs:
         ./CHANGELOG.md'
     required: false
     default: ''
+  debug:
+    description: 'Enable debug mode'
+    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
