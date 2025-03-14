@@ -1,0 +1,79 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  test-check:
+    name: runner / EkLine Reviewer (github-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/fetch-reviewdog
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      - uses: ./
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+          content_dir: |
+            ./testdata
+          ek_token: ${{ secrets.ek_token }}
+
+  test-pr-check:
+    if: github.event_name == 'pull_request'
+    name: runner / EkLine Reviewer (github-pr-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/fetch-reviewdog
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      - uses: ./
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-check
+          level: warning
+          content_dir: |
+            ./testdata
+          ek_token: ${{ secrets.ek_token }}
+
+  test-pr-review:
+    if: github.event_name == 'pull_request'
+    name: runner / EkLine Reviewer (github-pr-review)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/fetch-reviewdog
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      - uses: ./
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: error
+          content_dir: |
+            ./testdata
+          filter_mode: nofilter
+          ek_token: ${{ secrets.ek_token }}
+          ignore_rule: "EK00010,EK00003"
+          exclude_directories: |
+            ./testdata/temp
+          exclude_files: |
+            ./testdata/subdir/text.md
+
+  test-openapi:
+    if: github.event_name == 'pull_request'
+    name: runner / EkLine OpenAPI Reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: error
+          openapi_spec: 'testdata/openapi/test.yaml'
+          ek_token: ${{ secrets.ek_token }}
+          filter_mode: nofilter 
