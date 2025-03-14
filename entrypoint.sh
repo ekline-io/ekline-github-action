@@ -12,6 +12,54 @@ print_debug_info() {
   fi
 }
 
+fetchBranchFromFork() {
+  local fork_remote="$1"
+  local source_branch="$2"
+  local target_branch="$3"
+  
+  if [ "$INPUT_DEBUG" = "true" ]; then
+    echo "Available branches in ${fork_remote} remote:"
+    git ls-remote --heads "${fork_remote}"
+  fi
+  
+  if git fetch "${fork_remote}" "${source_branch}:${target_branch}" 2>/dev/null; then
+    echo "Successfully fetched branch from fork"
+    return 0
+  fi
+  
+  if git fetch "${fork_remote}" "refs/heads/${source_branch}:refs/heads/${target_branch}" 2>/dev/null; then
+    echo "Successfully fetched branch using refs/heads prefix"
+    return 0
+  fi
+  
+  echo "Failed to fetch branch ${source_branch} from ${fork_remote}. Aborting."
+  return 1
+}
+
+setupForkRemote() {
+  local remote_name="$1"
+  local remote_url="$2"
+  
+  echo "Setting up ${remote_name} remote with URL: ${remote_url}"
+  
+  if git remote | grep -q "^${remote_name}$"; then
+    local current_url
+    current_url=$(git remote get-url "${remote_name}" 2>/dev/null)
+    
+    if [ "$current_url" != "$remote_url" ]; then
+      echo "Remote ${remote_name} exists with different URL, updating it"
+      git remote remove "${remote_name}"
+      git remote add "${remote_name}" "${remote_url}" || { echo "Failed to add ${remote_name} as remote"; return 1; }
+    else
+      echo "Remote ${remote_name} already exists with correct URL"
+    fi
+  else
+    git remote add "${remote_name}" "${remote_url}" || { echo "Failed to add ${remote_name} as remote"; return 1; }
+  fi
+  
+  return 0
+}
+
 print_debug_info
 
 setGithubPullRequestId() {
@@ -107,38 +155,100 @@ fi
 if [ "${pull_request_id}" ]; then
   if [ "$GITLAB_CI" = "true" ]; then
     if [ "$CI_MERGE_REQUEST_SOURCE_PROJECT_URL" = "$CI_PROJECT_URL" ]; then
+      echo "Same-project merge request"
       git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches from the repository"; exit 1; }
     else
+      echo "Processing cross-project merge request from fork"
+      echo "Base branch: ${base_branch}, Head branch: ${head_branch}"
+      echo "Source project URL: ${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}"
+      
       git fetch origin "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
-      git remote add fork "${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}" || { echo "Failed to add fork as remote"; exit 1; }
-      git fetch fork "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+      
+      if ! setupForkRemote "fork" "${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}"; then
+        exit 1
+      fi
+      
+      if ! fetchBranchFromFork "fork" "${head_branch}" "${head_branch}"; then
+        exit 1
+      fi
     fi
   elif [ "$GITHUB_ACTIONS" = "true" ]; then
     if [ -f "$GITHUB_EVENT_PATH" ]; then
-      head_repo_url=$(cat "$GITHUB_EVENT_PATH" | grep '"clone_url"' | head -n 1 | awk -F '"clone_url":' '{print $2}' | tr -d '", ')
-      base_repo_url=$(cat "$GITHUB_EVENT_PATH" | grep '"repo"' | head -n 1 | awk -F '"url":' '{print $2}' | tr -d '", ')
+      head_repo_url=$(cat "$GITHUB_EVENT_PATH" | jq -r '.pull_request.head.repo.clone_url')
+      base_repo_url=$(cat "$GITHUB_EVENT_PATH" | jq -r '.pull_request.base.repo.clone_url')
 
+      if [ "$INPUT_DEBUG" = "true" ]; then
+        echo "head_repo_url: $head_repo_url"
+        echo "base_repo_url: $base_repo_url"
+        cat "$GITHUB_EVENT_PATH"
+      fi
+      
       if [ "$head_repo_url" != "$base_repo_url" ]; then
         echo "PR is from a forked repository: $head_repo_url"
+        
         git fetch origin "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
 
-        git remote add fork "$head_repo_url" || { echo "Failed to add fork as remote"; exit 1; }
-        git fetch fork "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+        if ! setupForkRemote "fork" "$head_repo_url"; then
+          exit 1
+        fi
+        
+        if ! fetchBranchFromFork "fork" "${head_branch}" "${head_branch}"; then
+          exit 1
+        fi
+      else
+        git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches from origin"; exit 1; }
       fi
+    else
+      git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches from origin"; exit 1; }
     fi
   elif [ "$CI" = "true" ] && [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
     origin_url=$(git remote get-url origin)
     upstream_url=$(git remote get-url upstream 2>/dev/null || echo "")
     if [ "$origin_url" != "$upstream_url" ] && [ "$upstream_url" != "" ] ; then
+      echo "Processing Bitbucket cross-repository PR"
+      
       git fetch upstream "${base_branch}:${base_branch}" || { echo "Failed to fetch base branch ${base_branch} from upstream"; exit 1; }
-      git fetch origin "${head_branch}:${head_branch}" || { echo "Failed to fetch head branch ${head_branch} from fork"; exit 1; }
+      
+      # Bitbucket Pipelines automatically configures origin to point to the fork
+      echo "Using existing origin as fork remote"
+      
+      if ! fetchBranchFromFork "origin" "${head_branch}" "${head_branch}"; then
+        exit 1
+      fi
     else
       git checkout --detach || { echo "Failed to detach HEAD"; exit 1; }
+      git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches from origin"; exit 1; }
     fi
   fi
-  git fetch origin "${base_branch}:${base_branch}" "${head_branch}:${head_branch}" || { echo "Failed to fetch branches"; exit 1; }
+  
   if [ -f "$(git rev-parse --git-dir)/shallow" ]; then
-    git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
+    if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
+      echo "Repository is shallow, attempting to fetch history..."
+      
+      # Function to unshallow the repository
+      unshallow_repo() {
+        echo "Unshallowing the entire repository..."
+        git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
+        echo "Repository fully unshallowed."
+      }
+      
+      # Try to fetch recent history first
+      if ! months_ago=$(cd /code && npm run get:dateMonthsAgo --silent -- 3); then
+        echo "Failed to get date, falling back to full unshallow"
+        unshallow_repo
+      elif ! git fetch --shallow-since="$months_ago"; then
+        echo "Failed to fetch commits for the last 3 months, falling back to full unshallow"
+        unshallow_repo
+      elif ! git diff --quiet "${base_branch}" "${head_branch}" 2>/dev/null; then
+        echo "History not sufficient. Falling back to full unshallow."
+        unshallow_repo
+      else
+        echo "Successfully fetched necessary history."
+      fi
+    else
+      echo "Repository is shallow but branch info unavailable. Unshallowing the entire repository..."
+      git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
+    fi
   fi
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
     changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
