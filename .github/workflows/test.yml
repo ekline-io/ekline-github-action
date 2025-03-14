@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/fetch-reviewdog
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - uses: ./
         with:
           github_token: ${{ secrets.github_token }}
@@ -27,9 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/fetch-reviewdog
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - uses: ./
         with:
           github_token: ${{ secrets.github_token }}
@@ -45,9 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/fetch-reviewdog
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - uses: ./
         with:
           github_token: ${{ secrets.github_token }}
