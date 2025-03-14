@@ -32,6 +32,7 @@ jobs:
           content_dir: |
             ./testdata
           ek_token: ${{ secrets.ek_token }}
+          debug: true
 
   test-pr-review:
     if: github.event_name == 'pull_request'
