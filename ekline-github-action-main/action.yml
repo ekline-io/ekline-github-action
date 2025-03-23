@@ -1,0 +1,65 @@
+````yaml
+name: 'EkLine (GitHub Action)'
+description: '📝 Optimize and improve your documentation website.'
+author: 'EkLine'
+inputs:
+  github_token:
+    description: 'GITHUB_TOKEN'
+    default: '${{ github.token }}'
+  workdir:
+    description: 'Working directory relative to the root directory.'
+    default: '.'
+  ### Flags for reviewdog ###
+  level:
+    description: 'Report level for reviewdog [info,warning,error]'
+    default: 'info'
+  reporter:
+    description: 'Reporter of reviewdog command [github-pr-check,github-pr-review].'
+    default: 'github-pr-check'
+  filter_mode:
+    description: |
+      Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
+      Default is added.
+    default: 'added'
+  fail_on_error:
+    description: |
+      Exit code for reviewdog when errors are found [true,false]
+      Default is `false`.
+    default: 'false'
+  reviewdog_flags:
+    description: 'Additional reviewdog flags'
+    default: ''
+  ### Flags for EkLine Reviewer ###
+  ek_token:
+    description: 'Token for EkLine application'
+    required: true
+  content_dir:
+    description: 'Content directories relative to the root. Specify a single path or multiple paths (one per line). Example:
+      content_dir: ./testData
+      content_dir: |
+        ./testData
+        ./testData2'
+    default: '.'
+  ignore_rule:
+    description: 'Ignore the rules that are passed in as comma separated values (eg: EK1,EK4)'
+    default: ''
+  enable_ai_suggestions:
+    description: 'Enable AI suggestions'
+    default: false
+  exclude_directories:
+    description: 'Specifies directories to exclude from analysis. Accepts multiple paths, each on a new line.'
+    default: ''
+  exclude_files:
+    description: 'Specifies files to exclude from analysis. Accepts multiple file paths, each on a new line.'
+    default: ''
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+
+# Ref: https://haya14busa.github.io/github-action-brandings/
+branding:
+  icon: 'book-open'
+  color: 'blue'
+```
+
+This updated `action.yml` file incorporates the new input options `exclude_directories` and `exclude_files`, allowing users to specify directories and files to exclude from analysis. Each input includes a description to guide users on how to use these new features, with default values set to empty strings for optional use. The formatting remains consistent with existing inputs to maintain readability and clarity.`
