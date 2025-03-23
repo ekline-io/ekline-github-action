@@ -1,0 +1,181 @@
+# EkLine GitHub Action
+
+[![Test](https://github.com/ekline-io/ekline-github-action/workflows/Test/badge.svg)](https://github.com/ekline-io/ekline-github-action/actions?query=workflow%3ATest)
+[![release](https://github.com/ekline-io/ekline-github-action/workflows/release/badge.svg)](https://github.com/ekline-io/ekline-github-action/actions?query=workflow%3Arelease)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ekline-io/ekline-github-action?logo=github&sort=semver)](https://github.com/ekline-io/ekline-github-action/releases)
+[![release](https://ghcr-badge.egpl.dev/ekline-io/ekline-ci-cd/latest_tag?label=Docker%20version%20ekline_ci_cd)](https://github.com/ekline-io/ekline-cli/pkgs/container/ekline-cli)
+
+Improve the quality and consistency of your documentation with EkLine, an automated review tool for your GitHub repositories. This action integrates seamlessly with your existing GitHub workflow, allowing you to maintain high-quality documentation.
+
+<!-- TOC -->
+* [EkLine GitHub action](#ekline-github-action)
+  * [Input](#input)
+  * [Usage](#usage)
+  * [Reporters](#reporters)
+    * [Reporter: GitHub Checks (reporter: github-pr-check)](#reporter--github-checks--reporter--github-pr-check-)
+    * [Reporter: GitHub Checks (reporter: github-check)](#reporter--github-checks--reporter--github-check-)
+    * [Reporter: GitHub PullRequest review comment (reporter: github-pr-review)](#reporter--github-pullrequest-review-comment--reporter--github-pr-review-)
+  * [Filter mode](#filter-mode)
+    * [`added` (default)](#added--default-)
+    * [`diff_context`](#diffcontext)
+    * [`file`](#file)
+    * [`nofilter`](#nofilter)
+    * [Filter Mode Support Table](#filter-mode-support-table)
+    * [Ignoring Specific Rules](#ignoring-specific-rules)
+* [EkLine Documentation](https://ekline.notion.site/EkLine-Documentation-820e545d76214d9d9cb2cbf627c19613)
+
+## Input
+
+```yaml
+inputs:
+  content_dir:
+    description: 'Content directories relative to the root. Specify a single path or multiple paths (one per line). Example:
+      content_dir: ./testData
+      content_dir: |
+        ./testData
+        ./testData2'
+    default: '.'
+  ek_token:
+    description: 'Token for EkLine application'
+    required: true
+  filter_mode:
+    description: |
+      Filtering mode for the EkLine reviewer command [added,diff_context,file,nofilter].
+      Default is added.
+    default: 'added'
+  github_token:
+    description: 'GITHUB_TOKEN'
+    default: '${{ secrets.github_token }}'
+  reporter:
+    description: 'Reporter of EkLine review command [github-pr-check,github-check,github-pr-review].'
+    default: 'github-pr-check'
+  ignore_rule:
+    description: 'Ignore the rules that are passed in as comma-separated values (eg: EK00001,EK00004). Use this flag to skip specific rules during the review process.'
+    default: ''
+  debug:
+    description: 'Enable debug mode to print all environment variables starting with INPUT_ when set to true.'
+    default: 'false'
+  exclude_directories:
+    description: 'Directories to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
+      exclude_directories: ./excludedDir
+      exclude_directories: |
+        ./excludedDir1
+        ./excludedDir2'
+    default: ''
+  exclude_files:
+    description: 'Files to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
+      exclude_files: ./fileToExclude.txt
+      exclude_files: |
+        ./file1.txt
+        ./file2.txt'
+    default: ''
+```
+
+## Usage
+
+```yaml
+name: EkLine
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+jobs:
+  test-pr-review:
+    if: github.event_name == 'pull_request'
+    name: runner / EkLine Reviewer (github-pr-review)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ekline-io/ekline-github-action@v6
+        with:
+          content_dir: ./src/docs
+          ek_token: ${{ secrets.ek_token }}
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          ignore_rule: "EK00010,EK00003"  # Optional
+          exclude_directories: |
+            ./excludedDir1
+            ./excludedDir2
+          exclude_files: |
+            ./file1.txt
+            ./file2.txt
+```
+
+## Reporters
+
+EkLine reviewer can report results in review services as
+continuous integration.
+
+### Reporter: GitHub Checks (reporter: github-pr-check)
+
+github-pr-check reporter reports results to [GitHub Checks](https://help.github.com/articles/about-status-checks/).
+
+### Reporter: GitHub Checks (reporter: github-check)
+
+It's essentially the same as `reporter: github-pr-check` except it works not only for
+Pull Request but also for commit.
+
+### Reporter: GitHub PullRequest review comment (reporter: github-pr-review)
+
+![sample-github-pr-review.png](./image/sample-github-pr-review.png)
+
+github-pr-review reporter reports results to GitHub PullRequest review comments
+using GitHub Personal API Access Token.
+[GitHub Enterprise](https://enterprise.github.com/home) supports this.
+
+- Go to https://github.com/settings/tokens and generate new API token.
+- Check `repo` for private repositories or `public_repo` for public repositories.
+
+## Filter mode
+
+You can control how EkLine reviewer filter results by `-filter-mode` flag.
+Available filter modes are as below.
+
+### `added` (default)
+
+Filter results by added/modified lines.
+
+### `diff_context`
+
+Filter results by diff context. that is, changed lines +-N lines (N=3 for example).
+
+### `file`
+
+Filter results by added/modified file. that is, EkLine reviewer reports results as long as they're in added/modified file even if the results aren't in actual diff.
+
+### `nofilter`
+
+Don't filter any results. Useful for posting results as comments as much as possible and check other results in console at the same time.
+
+### Filter Mode Support Table
+
+Note that not all reporters provide full support of filter mode due to API limitation.
+for example `github-pr-review` reporter uses [GitHub Review
+API](https://developer.github.com/v3/pulls/reviews/) but it doesn't support posting comment outside diff (`diff_context`),
+so EkLine reviewer uses [Check annotation](https://developer.github.com/v3/checks/runs/) as fallback to post those comments [1].
+
+| `reporter` \ `filter-mode` | `added` | `diff_context` | `file`                  | `nofilter` |
+| -------------------------- | ------- | -------------- | ----------------------- | ---------- |
+| **`github-check`**         | OK      | OK             | OK                      | OK         |
+| **`github-pr-check`**      | OK      | OK             | OK                      | OK         |
+| **`github-pr-review`**     | OK      | OK             | Supported [1] | Supported [1] |
+
+- [1] Report results which are outside diff context with Check annotation as fallback if it's running in GitHub actions instead of Review API (comments). The console also displays all results.
+
+### Ignoring Specific Rules
+
+To ignore specific rules during the review process, you can use the `ignore_rule` flag. This flag accepts a comma-separated list of rule identifiers that you wish to skip.
+
+For example, if you want to ignore rules `EK00001` and `EK00004`, you can set the `ignore_rule` flag in your configuration like this:
+
+```yaml
+  ignore_rule: "EK00001,EK00004"
+```
+
+## Purpose of Changes
+
+With the addition of `exclude_directories` and `exclude_files`, users can now customize their analysis even further by excluding irrelevant directories and files. This flexibility allows for more precise and efficient reviews, reducing processing time and avoiding potential errors from non-relevant content.
+
+For more details, visit the [EkLine Documentation](https://ekline.notion.site/EkLine-Documentation-820e545d76214d9d9cb2cbf627c19613).
