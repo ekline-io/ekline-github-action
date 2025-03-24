@@ -1,3 +1,4 @@
+````yaml
 name: 'EkLine (GitHub Action)'
 description: '📝 Optimize and improve your documentation website.'
 author: 'EkLine'
@@ -14,7 +15,7 @@ inputs:
     default: 'info'
   reporter:
     description: 'Reporter of reviewdog command [github-pr-check,github-pr-review].'
-    default: 'github-pr-review'
+    default: 'github-pr-check'
   filter_mode:
     description: |
       Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
@@ -40,34 +41,14 @@ inputs:
         ./testData2'
     default: '.'
   ignore_rule:
-    description: 'Ignore the rules that are passed in as comma seperated values (eg: EK1,EK4)'
+    description: 'Ignore the rules that are passed in as comma separated values (eg: EK1,EK4)'
     default: ''
   enable_ai_suggestions:
     description: 'Enable AI suggestions'
     default: false
   openapi_spec:
-    description: 'Path to OpenAPI specification file to review'
-    required: false
+    description: 'Path to an OpenAPI specification file to review.'
     default: ''
-  exclude_directories:
-    description: 'Directories to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
-      exclude_directories: ./node_modules
-      exclude_directories: |
-        ./node_modules
-        ./dist'
-    required: false
-    default: ''
-  exclude_files:
-    description: 'Files to exclude from analysis. Specify a single file or multiple files (one per line). Example:
-      exclude_files: ./README.md
-      exclude_files: |
-        ./README.md
-        ./CHANGELOG.md'
-    required: false
-    default: ''
-  debug:
-    description: 'Enable debug mode'
-    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -76,3 +57,4 @@ runs:
 branding:
   icon: 'book-open'
   color: 'blue'
+````
