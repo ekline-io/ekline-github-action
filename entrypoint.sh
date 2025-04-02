@@ -60,6 +60,54 @@ setupForkRemote() {
   return 0
 }
 
+handle_shallow_repository() {
+  if [ -f "$(git rev-parse --git-dir)/shallow" ]; then
+    if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
+      echo "Repository is shallow, attempting to fetch history if necessary..."
+
+      # Check if merge base exists
+      if git merge-base "${base_branch}" "${head_branch}" > /dev/null 2>&1; then
+        echo "Merge base found in current shallow history. Assuming sufficient history."
+      else
+        echo "Merge base not found. Attempting to fetch recent history..."
+        
+        # Function to unshallow the repository (used as fallback)
+        unshallow_repo() {
+          echo "Unshallowing the entire repository..."
+          git fetch --unshallow || { echo "Failed to unshallow the repository"; return 1; } 
+          echo "Repository fully unshallowed."
+          return 0
+        }
+        
+        # Try to fetch recent history first
+        if ! months_ago=$(cd /code && npm run get:dateMonthsAgo --silent -- 3); then
+          echo "Failed to get date, falling back to full unshallow"
+          unshallow_repo || return 1 
+        elif ! git fetch --shallow-since="$months_ago"; then
+          echo "Failed to fetch commits for the last 3 months using --shallow-since."
+          # Even if fetch failed partially, try merge-base again before full unshallow
+          if ! git merge-base "${base_branch}" "${head_branch}" > /dev/null 2>&1; then
+             echo "Merge base still not found after attempting --shallow-since fetch. Falling back to full unshallow."
+             unshallow_repo || return 1 
+          else
+             echo "Merge base found after fetching recent history."
+          fi
+        # Check merge-base again after successful shallow-since fetch
+        elif ! git merge-base "${base_branch}" "${head_branch}" > /dev/null 2>&1; then
+          echo "Merge base still not found after fetching recent history. Falling back to full unshallow."
+          unshallow_repo || return 1 
+        else
+          echo "Successfully fetched necessary history (found merge base)."
+        fi
+      fi
+    else
+      echo "Repository is shallow but branch info unavailable. Unshallowing the entire repository..."
+      git fetch --unshallow || { echo "Failed to unshallow the repository"; return 1; } 
+    fi
+  fi
+  return 0
+}
+
 print_debug_info
 
 setGithubPullRequestId() {
@@ -221,35 +269,8 @@ if [ "${pull_request_id}" ]; then
     fi
   fi
   
-  if [ -f "$(git rev-parse --git-dir)/shallow" ]; then
-    if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
-      echo "Repository is shallow, attempting to fetch history..."
-      
-      # Function to unshallow the repository
-      unshallow_repo() {
-        echo "Unshallowing the entire repository..."
-        git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
-        echo "Repository fully unshallowed."
-      }
-      
-      # Try to fetch recent history first
-      if ! months_ago=$(cd /code && npm run get:dateMonthsAgo --silent -- 3); then
-        echo "Failed to get date, falling back to full unshallow"
-        unshallow_repo
-      elif ! git fetch --shallow-since="$months_ago"; then
-        echo "Failed to fetch commits for the last 3 months, falling back to full unshallow"
-        unshallow_repo
-      elif ! git diff --quiet "${base_branch}" "${head_branch}" 2>/dev/null; then
-        echo "History not sufficient. Falling back to full unshallow."
-        unshallow_repo
-      else
-        echo "Successfully fetched necessary history."
-      fi
-    else
-      echo "Repository is shallow but branch info unavailable. Unshallowing the entire repository..."
-      git fetch --unshallow || { echo "Failed to unshallow the repository"; exit 1; }
-    fi
-  fi
+  handle_shallow_repository || exit 1
+
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
     changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
     echo "Changed files in this PR are:"
