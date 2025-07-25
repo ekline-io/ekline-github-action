@@ -370,12 +370,6 @@ eval "$ekline_command"
 
 
 if [ -s "$output" ]; then
-  if [ "$GITHUB_ACTIONS" = "true" ]; then
-    export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
-    export REPOSITORY="$GITHUB_REPOSITORY"
-    (cd /code && npm run comment:github)
-  fi
-
   LEVEL=${INPUT_LEVEL:-info}
 
   < "$output" reviewdog -f="rdjsonl" \
@@ -386,4 +380,11 @@ if [ -s "$output" ]; then
     ${INPUT_REVIEWDOG_FLAGS}
 else
   echo "No issues found."
+fi
+
+# Always post GitHub comment for PRs (positive or with issues)
+if [ "$GITHUB_ACTIONS" = "true" ] && [ -n "$pull_request_id" ]; then
+  export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
+  export REPOSITORY="$GITHUB_REPOSITORY"
+  (cd /code && npm run comment:github)
 fi

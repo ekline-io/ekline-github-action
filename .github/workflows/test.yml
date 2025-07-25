@@ -16,7 +16,9 @@ jobs:
           reporter: github-check
           content_dir: |
             ./testdata
+            ./testData2
           ek_token: ${{ secrets.ek_token }}
+          debug: true
 
   test-pr-check:
     if: github.event_name == 'pull_request'
@@ -31,6 +33,7 @@ jobs:
           level: warning
           content_dir: |
             ./testdata
+            ./testData2
           ek_token: ${{ secrets.ek_token }}
 
   test-pr-review:
@@ -46,11 +49,13 @@ jobs:
           level: error
           content_dir: |
             ./testdata
+            ./testData2
           filter_mode: nofilter
           ek_token: ${{ secrets.ek_token }}
           ignore_rule: "EK00010,EK00003"
           exclude_directories: |
             ./testdata/temp
+            ./testData2/draft
           exclude_files: |
             ./testdata/subdir/text.md
 
@@ -68,3 +73,18 @@ jobs:
           openapi_spec: 'testdata/openapi/test.yaml'
           ek_token: ${{ secrets.ek_token }}
           filter_mode: nofilter 
+          debug: true
+
+  test-no-issues:
+    if: github.event_name == 'pull_request'
+    name: runner / EkLine No Issues Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          content_dir: './testdata/another-content.md'
+          ek_token: ${{ secrets.ek_token }}
+          debug: true
