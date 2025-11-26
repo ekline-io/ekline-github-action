@@ -5,6 +5,20 @@ on:
       - main
   pull_request:
 jobs:
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+
   test-check:
     name: runner / EkLine Reviewer (github-check)
     runs-on: ubuntu-latest

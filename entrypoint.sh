@@ -108,7 +108,6 @@ handle_shallow_repository() {
   return 0
 }
 
-print_debug_info
 
 setGithubPullRequestId() {
   is_pull_request="$(echo "$GITHUB_REF" | awk -F / '{print $2}')"
@@ -119,7 +118,10 @@ setGithubPullRequestId() {
   fi
 }
 
-if [ "$GITLAB_CI" = "true" ]; then
+main() {
+  print_debug_info
+
+  if [ "$GITLAB_CI" = "true" ]; then
   input_workspace="$CI_PROJECT_DIR"
   rd_api_token="$INPUT_GITLAB_TOKEN"
   disable_suggestions="--no-suggestion"
@@ -198,6 +200,10 @@ fi
 if [ -n "${input_workspace}" ] ; then
   cd "${input_workspace}/${INPUT_WORKDIR}" || { echo "Failed to get ${input_workspace}/${INPUT_WORKDIR}"; exit 1; }
   git config --global --add safe.directory "${input_workspace}" || exit 1
+  
+  # Disable quoting of non-ASCII characters (e.g. \342\200\257) so we get raw UTF-8 filenames.
+  # Without this, git outputs octal escapes which causes "file not found" errors in downstream tools.
+  git config --global core.quotePath false || exit 1
 fi
 
 if [ "${pull_request_id}" ]; then
@@ -309,12 +315,7 @@ fi
 
 cf_option=""
 if [ -n "${changed_files}" ]; then
-    cf_option="-cf"
-    while IFS= read -r file; do
-        cf_option="$cf_option \"$file\""
-    done <<EOF
-${changed_files}
-EOF
+    cf_option=$(cd /code && npm run build:cfOption --silent -- "${changed_files}")
 fi
 
 ekline_args=""
@@ -387,4 +388,9 @@ if [ "$GITHUB_ACTIONS" = "true" ] && [ -n "$pull_request_id" ]; then
   export REPOSITORY_OWNER="$GITHUB_REPOSITORY_OWNER"
   export REPOSITORY="$GITHUB_REPOSITORY"
   (cd /code && npm run comment:github)
+fi
+}
+
+if [ -z "$SOURCED_FOR_TEST" ]; then
+  main "$@"
 fi
