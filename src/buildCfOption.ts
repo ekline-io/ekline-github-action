@@ -5,11 +5,46 @@ export const escapeForShell = (filename: string): string => {
 };
 
 const stripGitQuotes = (filename: string): string => {
-  // Git may pre-quote filenames with special characters: "path/to/file.png"
-  if (filename.startsWith('"') && filename.endsWith('"')) {
-    return filename.slice(1, -1);
+  if (!filename.startsWith('"') || !filename.endsWith('"')) {
+    return filename;
   }
-  return filename;
+
+  // Remove outer quotes first
+  let content = filename.slice(1, -1);
+
+  // Helper to replace escape sequences
+  // Matches:
+  // 1. Octal: \000 to \377 (1-3 digits)
+  // 2. Unicode: \uXXXX (4 hex digits)
+  // 3. Control chars: \a, \b, \t, etc.
+  // 4. Literal escapes: \\, \"
+  return content.replace(/\\([0-7]{1,3}|u[0-9a-fA-F]{4}|[abfnrtv"\\?])/g, (match, code) => {
+    // Handle Octal \nnn
+    if (/^[0-7]+$/.test(code)) {
+      return String.fromCharCode(parseInt(code, 8));
+    }
+    
+    // Handle Unicode \uXXXX
+    if (code.startsWith('u')) {
+      return String.fromCharCode(parseInt(code.slice(1), 16));
+    }
+
+    // Handle C-style escapes
+    const escapes: Record<string, string> = {
+      'a': '\x07',
+      'b': '\b',
+      'f': '\f',
+      'n': '\n',
+      'r': '\r',
+      't': '\t',
+      'v': '\v',
+      '"': '"',
+      '\\': '\\',
+      '?': '?'
+    };
+
+    return escapes[code] || match;
+  });
 };
 
 export const buildCfOption = (changedFiles: string): string => {
@@ -41,4 +76,3 @@ const main = (): void => {
 if (require.main === module) {
   main();
 }
-

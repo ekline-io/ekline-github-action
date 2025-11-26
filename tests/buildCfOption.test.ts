@@ -57,6 +57,13 @@ describe('buildCfOption', () => {
     expect(result).toBe("-cf '.gitbook/assets/Screenshot (2).png'");
   });
 
+  it('correctly unescapes git quoted filenames with quotes', () => {
+    // Git output: "file with \"quote\".txt"
+    const result = buildCfOption('"file with \\"quote\\".txt"');
+    // Result should be wrapped in single quotes: 'file with "quote".txt'
+    expect(result).toBe(`-cf 'file with "quote".txt'`);
+  });
+
   it('handles filenames with non-ASCII characters (NBSP)', () => {
     // \u00A0 is non-breaking space
     const result = buildCfOption('Screenshot\u00A0(2).png');
@@ -77,6 +84,18 @@ file's test.md`;
 file2.md`;
     const result = buildCfOption(files);
     expect(result).toBe("-cf 'file1.md' 'file2.md'");
+  });
+
+  it('correctly unescapes octal sequences', () => {
+    // "\101" is "A"
+    const result = buildCfOption('"\\101.txt"');
+    expect(result).toBe("-cf 'A.txt'");
+  });
+
+  it('correctly unescapes special C-style chars', () => {
+    // "\t" is tab
+    const result = buildCfOption('"file\\tname.txt"');
+    expect(result).toBe("-cf 'file\tname.txt'");
   });
 });
 
@@ -114,4 +133,3 @@ describe('shell safety', () => {
     expect(result).toContain("file's name.png");
   });
 });
-
