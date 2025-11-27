@@ -278,7 +278,7 @@ if [ "${pull_request_id}" ]; then
   handle_shallow_repository || exit 1
 
   if [ -n "${base_branch}" ] && [ -n "${head_branch}" ]; then
-    changed_files=$(git diff --name-only "${base_branch}" "${head_branch}") || { echo "Failed to get changed files: ${base_branch}..${head_branch}"; exit 1; }
+    changed_files=$(git diff --name-only --diff-filter=d "${base_branch}...${head_branch}") || { echo "Failed to get changed files: ${base_branch}...${head_branch}"; exit 1; }
     echo "Changed files in this PR are:"
   else
     echo "Base branch or head branch is not specified."
@@ -289,8 +289,6 @@ else
 fi
 
 echo "${changed_files}"
-
-set -- ${changed_files}
 
 export REVIEWDOG_GITLAB_API_TOKEN="${rd_api_token}"
 export REVIEWDOG_GITHUB_API_TOKEN="${rd_api_token}"
