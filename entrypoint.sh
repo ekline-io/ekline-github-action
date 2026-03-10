@@ -370,6 +370,7 @@ eval "$ekline_command"
 
 if [ -s "$output" ]; then
   LEVEL=${INPUT_LEVEL:-info}
+  export EKLINE_REVIEWDOG_IGNORE_SUGGESTIONS=true
 
   < "$output" reviewdog -f="rdjsonl" \
     -name="EkLine" \
