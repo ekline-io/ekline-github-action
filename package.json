@@ -8,7 +8,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@octokit/rest": "^20.1.1",
+    "@octokit/rest": "^20.1.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5"
   },
