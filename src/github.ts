@@ -2,16 +2,14 @@ import { Octokit } from '@octokit/rest';
 import { existsSync, statSync } from 'fs';
 
 const issueNumber = parseInt(process.env['PULL_REQUEST_ID'] || '', 10);
-const jobId = process.env['EXTERNAL_JOB_ID'];
 const githubToken = process.env['INPUT_GITHUB_TOKEN'];
-const eklineAppURL = process.env['EKLINE_APP_URL'];
 const repository = process.env['REPOSITORY'];
 const repositoryOwner = process.env['REPOSITORY_OWNER'];
 
 const searchTitle = 'EkLine Reviewer';
 const searchString = `### 🌟 **EkLine Reviewer**
 
-Hello! I’m here to help improve your docs. I’ve reviewed your pull request, and left in-line suggestions for quick fixes. For details, visit the [Analytics Page](<link>).
+Hello! I’m here to help improve your docs. I’ve reviewed your pull request, and left in-line suggestions for quick fixes.
 
 For questions or feedback, please email [support@ekline.io](mailto:support@ekline.io).`;
 
@@ -106,9 +104,7 @@ const hasExistingReviewComments = async (owner: string, repo: string): Promise<b
     `Local issues: ${hasLocalIssues}, Review issues: ${hasReviewIssues}, Total issues: ${hasIssues}`
   );
 
-  const jobComment = hasIssues
-    ? searchString.replace('<link>', `${eklineAppURL}/job/review/${jobId}`)
-    : positiveString;
+  const jobComment = hasIssues ? searchString : positiveString;
 
   if (commentId) {
     console.log(`Updating comment with ID: ${commentId}`);
