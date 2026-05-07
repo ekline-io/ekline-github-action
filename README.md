@@ -5,76 +5,49 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ekline-io/ekline-github-action?logo=github&sort=semver)](https://github.com/ekline-io/ekline-github-action/releases)
 [![release](https://ghcr-badge.egpl.dev/ekline-io/ekline-ci-cd/latest_tag?label=Docker%20version%20ekline_ci_cd)](https://github.com/ekline-io/ekline-cli/pkgs/container/ekline-cli)
 
-Improve the quality and consistency of your documentation with EkLine, an automated review tool for your GitHub repositories. This action integrates seamlessly with your existing GitHub workflow, allowing you to maintain high-quality documentation easily.
-
+Improve the quality and consistency of your documentation with EkLine, an automated review tool for your GitHub repositories. This action integrates with your existing GitHub workflow so you can keep documentation accurate and consistent on every pull request.
 
 <!-- TOC -->
-* [EkLine GitHub action](#ekline-github-action)
-  * [Input](#input)
+* [EkLine GitHub Action](#ekline-github-action)
+  * [Documentation](#documentation)
+  * [Inputs](#inputs)
   * [Usage](#usage)
   * [Reporters](#reporters)
-    * [Reporter: GitHub Checks (reporter: github-pr-check)](#reporter--github-checks--reporter--github-pr-check-)
-    * [Reporter: GitHub Checks (reporter: github-check)](#reporter--github-checks--reporter--github-check-)
-    * [Reporter: GitHub PullRequest review comment (reporter: github-pr-review)](#reporter--github-pullrequest-review-comment--reporter--github-pr-review-)
+    * [`github-pr-check`](#github-pr-check)
+    * [`github-check`](#github-check)
+    * [`github-pr-review`](#github-pr-review)
   * [Filter mode](#filter-mode)
-    * [`added` (default)](#added--default-)
-    * [`diff_context`](#diffcontext)
+    * [`added` (default)](#added-default)
+    * [`diff_context`](#diff_context)
     * [`file`](#file)
     * [`nofilter`](#nofilter)
-    * [Filter Mode Support Table](#filter-mode-support-table)
-    * [Ignoring Specific Rules](#ignoring-specific-rules)
+    * [Filter mode support](#filter-mode-support)
+  * [Ignoring specific rules](#ignoring-specific-rules)
 <!-- TOC -->
-* [EkLine Documentation](https://ekline.notion.site/EkLine-Documentation-820e545d76214d9d9cb2cbf627c19613)
 
-## Input
+## Documentation
 
-```yaml
-inputs:
-  content_dir:
-    description: 'Content directories relative to the root. Specify a single path or multiple paths (one per line). Example:
-      content_dir: ./testData
-      content_dir: |
-        ./testData
-        ./testData2'
-    default: '.'
-  ek_token:
-    description: 'Token for EkLine application'
-    required: true
-  filter_mode:
-    description: |
-      Filtering mode for the EkLine reviewer command [added,diff_context,file,nofilter].
-      Default is added.
-    default: 'added'
-  github_token:
-    description: 'GITHUB_TOKEN'
-    default: '${{ secrets.github_token }}'
-  reporter:
-    description: 'Reporter of EkLine review command [github-pr-check,github-check,github-pr-review].'
-    default: 'github-pr-review'
-  ignore_rule:
-    description: 'Ignore the rules that are passed in as comma-separated values (eg: EK00001,EK00004). Use this flag to skip specific rules during the review process.'
-    default: ''
-  openapi_spec:
-    description: 'Path to OpenAPI specification file to review'
-    required: false
-  exclude_directories:
-    description: 'Directories to exclude from analysis. Specify a single path or multiple paths (one per line). Example:
-      exclude_directories: ./node_modules
-      exclude_directories: |
-        ./node_modules
-        ./dist'
-    default: ''
-  exclude_files:
-    description: 'Files to exclude from analysis. Specify a single file or multiple files (one per line). Example:
-      exclude_files: ./README.md
-      exclude_files: |
-        ./README.md
-        ./CHANGELOG.md'
-    default: ''
-  debug:
-    description: 'Enable debug mode to print all environment variables starting with INPUT_ when set to true.'
-    default: 'false'
-```
+For complete documentation, see [docs.ekline.io](https://docs.ekline.io).
+
+## Inputs
+
+| Input | Description | Required | Default |
+| --- | --- | --- | --- |
+| `github_token` | GITHUB_TOKEN used to post review comments. | No | `${{ github.token }}` |
+| `workdir` | Working directory relative to the repository root. | No | `.` |
+| `level` | Report level for reviewdog. One of `info`, `warning`, `error`. | No | `info` |
+| `reporter` | Reporter for reviewdog. One of `github-pr-check`, `github-check`, `github-pr-review`. | No | `github-pr-review` |
+| `filter_mode` | Filtering mode for reviewdog. One of `added`, `diff_context`, `file`, `nofilter`. | No | `added` |
+| `fail_on_error` | When `true`, the action exits with a non-zero status if errors are found, which fails the CI check. | No | `false` |
+| `reviewdog_flags` | Additional flags passed to reviewdog. | No | `''` |
+| `ek_token` | Token for the EkLine application. | **Yes** | — |
+| `content_dir` | Content directories relative to the root. Accepts a single path or multiple paths (one per line). | No | `.` |
+| `ignore_rule` | Comma-separated list of rule IDs to skip (for example, `EK00001,EK00004`). | No | `''` |
+| `enable_ai_suggestions` | When `true`, EkLine returns AI-powered writing improvement suggestions alongside style violations. | No | `false` |
+| `openapi_spec` | Path to an OpenAPI specification file used for API terminology validation. | No | `''` |
+| `exclude_directories` | Directories to exclude from analysis. Accepts a single path or multiple paths (one per line). | No | `''` |
+| `exclude_files` | Files to exclude from analysis. Accepts a single file or multiple files (one per line). | No | `''` |
+| `debug` | When `true`, the action prints debug information about its inputs and environment. | No | `false` |
 
 ## Usage
 
@@ -91,81 +64,87 @@ jobs:
     if: github.event_name == 'pull_request'
     name: runner / EkLine Reviewer (github-pr-review)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ekline-io/ekline-github-action@v6
         with:
           content_dir: ./src/docs
           ek_token: ${{ secrets.ek_token }}
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ github.token }}
           reporter: github-pr-review
           openapi_spec: './api/openapi.yaml'
-          ignore_rule: "EK00010,EK00003"  # Optional
-          exclude_directories: |  # Optional
-            ./node_modules
-            ./dist
-          exclude_files: |  # Optional
-            ./CHANGELOG.md
-            ./LICENSE
+          # ignore_rule: "EK00010,EK00003"     # Optional
+          # enable_ai_suggestions: true        # Optional
+          # fail_on_error: 'true'              # Optional
+          # exclude_directories: |             # Optional
+          #   ./node_modules
+          #   ./dist
+          # exclude_files: |                   # Optional
+          #   ./CHANGELOG.md
+          #   ./LICENSE
 ```
 
 ## Reporters
 
-EkLine reviewer can report results in review services as
-continuous integration.
+The action posts review results in one of three formats. Set the format with the `reporter` input.
 
-### Reporter: GitHub Checks (reporter: github-pr-check)
+### `github-pr-check`
 
-github-pr-check reporter reports results to [GitHub Checks](https://help.github.com/articles/about-status-checks/).
+Reports results to [GitHub Checks](https://docs.github.com/en/rest/checks). Comments appear in the **Checks** tab on the pull request.
 
-### Reporter: GitHub Checks (reporter: github-check)
+### `github-check`
 
-It's basically same as `reporter: github-pr-check` except it works not only for
-Pull Request but also for commit.
+Behaves like `github-pr-check`, but works on commits as well as pull requests.
 
-### Reporter: GitHub PullRequest review comment (reporter: github-pr-review)
+### `github-pr-review`
 
 ![sample-github-pr-review.png](./image/sample-github-pr-review.png)
 
-github-pr-review reporter reports results to GitHub PullRequest review comments
-using GitHub Personal API Access Token.
-[GitHub Enterprise](https://enterprise.github.com/home) is supported too.
+Reports results as line-level review comments on the pull request.
 
-- Go to https://github.com/settings/tokens and generate new API token.
-- Check `repo` for private repositories or `public_repo` for public repositories.
+When running as a GitHub Action, the default `github_token` input (`${{ github.token }}`) provides sufficient permissions. No personal access token is needed.
 
+For use outside GitHub Actions, generate a token at https://github.com/settings/tokens with the `repo` scope (private repositories) or `public_repo` scope (public repositories). [GitHub Enterprise](https://enterprise.github.com/home) is supported.
 
 ## Filter mode
-You can control how EkLine reviewer filter results by `-filter-mode` flag.
-Available filter modes are as below.
+
+The `filter_mode` input controls which results are posted as comments. Available modes:
 
 ### `added` (default)
-Filter results by added/modified lines.
+
+Filter results to lines added or modified in the pull request.
+
 ### `diff_context`
-Filter results by diff context. i.e. changed lines +-N lines (N=3 for example).
+
+Filter results to the diff context — changed lines plus a few surrounding lines.
+
 ### `file`
-Filter results by added/modified file. i.e. EkLine reviewer will report results as long as they are in added/modified file even if the results are not in actual diff.
+
+Filter results to added or modified files. EkLine reports issues anywhere in those files, even on lines outside the diff.
+
 ### `nofilter`
-Do not filter any results. Useful for posting results as comments as much as possible and check other results in console at the same time.
 
-### Filter Mode Support Table
-Note that not all reporters provide full support of filter mode due to API limitation.
-e.g. `github-pr-review` reporter uses [GitHub Review
-API](https://developer.github.com/v3/pulls/reviews/) but it doesn't support posting comment outside diff (`diff_context`),
-so EkLine reviewer will use [Check annotation](https://developer.github.com/v3/checks/runs/) as fallback to post those comments [1].
+Don't filter. Report every issue. Useful when you want a full picture in the console while still posting comments where the API allows.
 
-| `reporter` \ `filter-mode` | `added` | `diff_context` | `file`                  | `nofilter` |
-| -------------------------- | ------- | -------------- | ----------------------- | ---------- |
-| **`github-check`**         | OK      | OK             | OK                      | OK |
-| **`github-pr-check`**      | OK      | OK             | OK                      | OK |
-| **`github-pr-review`**     | OK      | OK             | Partially Supported [1] | Partially Supported [1] |
+### Filter mode support
 
-- [1] Report results which is outside diff context with Check annotation as fallback if it's running in GitHub actions instead of Review API (comments). All results will be reported to console as well.
+Not every reporter supports every filter mode, due to API limitations. The `github-pr-review` reporter uses the [GitHub Review API](https://docs.github.com/en/rest/pulls/reviews), which does not allow comments outside the diff. EkLine falls back to [Check annotations](https://docs.github.com/en/rest/checks/runs) for those results when running in GitHub Actions. All results are also reported to the console.
 
-### Ignoring Specific Rules
+| `reporter` \ `filter_mode` | `added` | `diff_context` | `file` | `nofilter` |
+| --- | --- | --- | --- | --- |
+| `github-check` | OK | OK | OK | OK |
+| `github-pr-check` | OK | OK | OK | OK |
+| `github-pr-review` | OK | OK | Partial | Partial |
 
-To ignore specific rules during the review process, you can use the `ignore_rule` flag. This flag accepts a comma-separated list of rule identifiers that you wish to skip.
+## Ignoring specific rules
 
-For example, if you want to ignore rules `EK00001` , `EK00004` and `EK00005`, you can set the `ignore_rule` flag in your configuration like this:
+Use `ignore_rule` to skip specific rules during review. The flag takes a comma-separated list of rule IDs.
+
+For example, to skip rules `EK00001`, `EK00004`, and `EK00005`:
+
 ```yaml
-  ignore_rule: "EK00001,EK00004,EK00005"
+ignore_rule: "EK00001,EK00004,EK00005"
+```
